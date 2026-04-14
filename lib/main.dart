@@ -10,13 +10,13 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getString('userId') != null;
   
-  runApp(KineticApp(isLoggedIn: isLoggedIn));
+  runApp(FrooflyApp(isLoggedIn: isLoggedIn));
 }
 
-class KineticApp extends StatelessWidget {
+class FrooflyApp extends StatelessWidget {
   final bool isLoggedIn;
   
-  const KineticApp({super.key, required this.isLoggedIn});
+  const FrooflyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {

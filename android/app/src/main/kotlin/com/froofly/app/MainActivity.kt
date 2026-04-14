@@ -1,4 +1,4 @@
-package com.example.kinetic
+package com.froofly.app
 
 import io.flutter.embedding.android.FlutterActivity
 
