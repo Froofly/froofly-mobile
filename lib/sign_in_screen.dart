@@ -34,8 +34,12 @@ class _SignInScreenState extends State<SignInScreen> {
           // Save session to local storage
           final data = jsonDecode(response.body);
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('userId', data['userId']);
-          await prefs.setString('email', data['email']);
+          await prefs.setString('userId', data['userId'] ?? '');
+          await prefs.setString('email', data['email'] ?? '');
+          await prefs.setString('fullName', data['fullName'] ?? '');
+          await prefs.setString('phoneNumber', data['phoneNumber'] ?? '');
+          await prefs.setInt('currentBalance', data['currentBalance'] ?? 0);
+          await prefs.setString('avatarUrl', data['avatarUrl'] ?? '');
 
           if (!mounted) return;
           Navigator.of(context).pushReplacement(

@@ -1,0 +1,1 @@
+fix: resolve LateInitializationError by replacing Supabase client with SharedPreferences
