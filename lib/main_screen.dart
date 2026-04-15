@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_screen.dart';
 import 'rewards_marketplace.dart';
@@ -131,8 +131,8 @@ class _MainScreenState extends State<MainScreen> {
     );
 
     try {
-      final user = Supabase.instance.client.auth.currentUser;
-      final String? userId = user?.id;
+      final prefs = await SharedPreferences.getInstance();
+      final String? userId = prefs.getString('userId');
       
       if (userId == null) {
         throw 'User not logged in';
