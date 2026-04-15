@@ -111,7 +111,7 @@ class _MainScreenState extends State<MainScreen> {
     try {
       final XFile? media = await _picker.pickImage(source: source);
       if (media != null && mounted) {
-        _processImageWithOpenRouter(media);
+        _processImageWithBackend(media);
       }
     } catch (e) {
       if (mounted) {
@@ -122,7 +122,7 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  Future<void> _processImageWithOpenRouter(XFile media) async {
+  Future<void> _processImageWithBackend(XFile media) async {
     // Show loading indicator
     showDialog(
       context: context,
@@ -131,164 +131,47 @@ class _MainScreenState extends State<MainScreen> {
     );
 
     try {
-      // 1. Setup OpenRouter
-      const apiKey = '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'; 
-      final bytes = await media.readAsBytes();
-      final base64Image = base64Encode(bytes);
-
-      // 2. Prepare Payload & Send Request
-      final response = await http.post(
-        Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-        },
-        body: jsonEncode({
-          'model': 'meta-llama/llama-3.2-11b-vision-instruct',
-          'response_format': {'type': 'json_object'},
-          'messages': [
-            {
-              'role': 'user',
-              'content': [
-                {
-                  'type': 'text',
-                  'text': '''Analyze this payment screenshot. 
-FIRST: Check if the transaction is "Successful", "Completed", or "Paid Successfully". 
-If IT IS NOT successful (e.g., failed, pending, or different screen), return ONLY exactly this JSON: {"status": "rejected", "message": "Transaction was not successful. Please upload a successful payment screenshot."}.
-
-SECOND: If successful, extract the data and return ONLY exactly this JSON format:
-{
-  "status": "success",
-  "amount": 0.0,
-  "transaction_id": "",
-  "receiver_name": "",
-  "receiver_upi": "",
-  "sender_bank": "",
-  "payment_app": "",
-  "date": {"day": 1, "month": 1, "year": 2026},
-  "time": {"hour": 1, "minute": 1, "period": "AM"}
-}'''
-                },
-                {
-                  'type': 'image_url',
-                  'image_url': {
-                    'url': 'data:image/jpeg;base64,$base64Image'
-                  }
-                }
-              ]
-            }
-          ]
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        throw 'API Error: ${response.body}';
-      }
-
-      // 3. Extract text
-      final responseData = jsonDecode(response.body);
-      final text = responseData['choices']?[0]?['message']?['content'];
-      if (text == null) throw 'AI returned empty response';
-
-      // Extract the JSON block using Regex in case Llama outputted conversational text
-      final RegExp jsonRegExp = RegExp(r'\{[\s\S]*\}');
-      final match = jsonRegExp.firstMatch(text);
-      if (match == null) throw 'Could not strictly extract JSON from AI response: $text';
-      final Map<String, dynamic> data = jsonDecode(match.group(0)!);
-
-      if (data['status'] == 'rejected') {
-        if (mounted) {
-          Navigator.pop(context); // pop loading dialog
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'])),
-          );
-        }
-        return;
-      }
-
-      // 4. Save to Supabase
       final user = Supabase.instance.client.auth.currentUser;
+      final String? userId = user?.id;
       
-      // Temporary bypass for rate limit testing
-      String? targetUserId = user?.id;
-      if (targetUserId == null) {
-        final anyUser = await Supabase.instance.client.from('profiles').select('id').limit(1).maybeSingle();
-        if (anyUser == null) throw 'No users exist in the database. Please wait for the rate limit to expire to add one!';
-        targetUserId = anyUser['id'] as String;
+      if (userId == null) {
+        throw 'User not logged in';
       }
 
-      // Start a transaction-like flow (manual sequence)
-      // A. Save Main Proof
-      final proofResponse = await Supabase.instance.client.from('transaction_proofs').insert({
-        'user_id': targetUserId,
-        'amount': data['amount'],
-        'transaction_id': data['transaction_id'],
-        'receiver_name': data['receiver_name'],
-        'receiver_upi': data['receiver_upi'],
-        'sender_bank': data['sender_bank'],
-        'payment_app': data['payment_app'],
-      }).select().single();
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://10.0.2.2:3000/payment/upload-screenshot'),
+      );
+      
+      request.fields['userId'] = userId;
+      request.files.add(await http.MultipartFile.fromPath(
+        'screenshot',
+        media.path,
+      ));
 
-      final proofId = proofResponse['id'];
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
-      // B. Save Date
-      await Supabase.instance.client.from('transaction_dates').insert({
-        'proof_id': proofId,
-        'day': data['date']?['day'] ?? 1,
-        'month': data['date']?['month'] ?? 1,
-        'year': data['date']?['year'] ?? 2026,
-      });
-
-      // C. Save Time
-      await Supabase.instance.client.from('transaction_times').insert({
-        'proof_id': proofId,
-        'hour': data['time']?['hour'] ?? 12,
-        'minutes': data['time']?['minute'] ?? 0,
-        'period': data['time']?['period'] ?? 'AM',
-      });
-
-      // E. Calculate Coins based on amount
-      final double amount = double.tryParse(data['amount'].toString()) ?? 0.0;
-      int coins = 0;
-      if (amount >= 1 && amount <= 100) {
-        coins = Random().nextInt(50) + 1; // 1 to 50
-      } else if (amount > 100 && amount <= 1000) {
-        coins = Random().nextInt(151) + 50; // 50 to 200
-      } else if (amount > 1000) {
-        coins = Random().nextInt(301) + 200; // 200 to 500
+      if (response.statusCode != 201 && response.statusCode != 200) {
+        final errorBody = jsonDecode(response.body);
+        throw errorBody['message'] ?? 'Extraction failed';
       }
 
-      // F. Save to coin_ledger and update total balance
-      if (coins > 0) {
-        await Supabase.instance.client.from('coin_ledger').insert({
-          'user_id': targetUserId,
-          'amount': coins,
-          'transaction_type': 'proof_upload',
-          'description': 'Reward for uploading payment proof',
-        });
-
-        // Add to user's total coins 
-        final profileResponse = await Supabase.instance.client
-            .from('profiles')
-            .select('current_balance')
-            .eq('id', targetUserId)
-            .single();
-            
-        final int currentBalance = profileResponse['current_balance'] ?? 0;
-        final int newBalance = currentBalance + coins;
-
-        // Update the total balance in the database
-        await Supabase.instance.client
-            .from('profiles')
-            .update({'current_balance': newBalance})
-            .eq('id', targetUserId);
-      }
+      final data = jsonDecode(response.body);
+      final int coins = data['coins'] ?? 0;
 
       if (mounted) {
         Navigator.pop(context); // pop loading dialog
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => CoinsRewardScreen(coins: coins)),
+          MaterialPageRoute(
+            builder: (context) => CoinsRewardScreen(
+              coins: coins,
+              amount: data['amount']?.toDouble() ?? 0.0,
+              transactionId: data['transactionId'] ?? '',
+              isJackpot: data['isJackpot'] ?? false,
+            ),
+          ),
         );
       }
 
@@ -296,7 +179,7 @@ SECOND: If successful, extract the data and return ONLY exactly this JSON format
       if (mounted) {
         Navigator.pop(context); // pop loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Extraction failed: ${e.toString()}')),
+          SnackBar(content: Text('Error: ${e.toString()}')),
         );
       }
     }
