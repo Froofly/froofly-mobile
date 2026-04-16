@@ -1,9 +1,10 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math' as math;
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import 'theme.dart';
 import 'membership_screen.dart';
@@ -11,6 +12,7 @@ import 'sign_in_screen.dart';
 import 'notification_preferences_screen.dart';
 import 'help_support_screen.dart';
 import 'account_privacy_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -38,20 +40,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('userId');
+    String avatarUrl = prefs.getString('avatarUrl') ?? '';
 
     int fetchedTotalBills = 0;
     int fetchedAchievements = 0;
 
     if (userId != null && userId.isNotEmpty) {
       try {
-        final response = await http.get(Uri.parse('https://froofly-backend.onrender.com/auth/stats/$userId'));
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
+        // 1. Fetch Stats
+        final statsResponse = await http.get(Uri.parse('https://froofly-backend.onrender.com/auth/stats/$userId'));
+        if (statsResponse.statusCode == 200) {
+          final data = jsonDecode(statsResponse.body);
           fetchedTotalBills = data['totalBills'] ?? 0;
           fetchedAchievements = data['achievements'] ?? 0;
         }
+
+        // 2. Sync Avatar from Upstash Redis if local is missing
+        bool localFileExists = false;
+        if (avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
+          localFileExists = await File(avatarUrl).exists();
+        }
+
+        if (avatarUrl.isEmpty || !localFileExists) {
+          final avatarResponse = await http.get(Uri.parse('https://froofly-backend.onrender.com/avatar/$userId'));
+          if (avatarResponse.statusCode == 200) {
+            final data = jsonDecode(avatarResponse.body);
+            final base64String = data['base64'] as String?;
+            if (base64String != null) {
+              final bytes = base64Decode(base64String);
+              final dir = await getApplicationDocumentsDirectory();
+              final file = File('${dir.path}/avatar_$userId.png');
+              await file.writeAsBytes(bytes);
+              avatarUrl = file.path;
+              await prefs.setString('avatarUrl', avatarUrl);
+            }
+          }
+        }
       } catch (e) {
-        debugPrint('Error fetching stats: $e');
+        debugPrint('Error fetching data/avatar: $e');
       }
     }
 
@@ -62,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _email = prefs.getString('email') ?? '';
       _phoneNumber = prefs.getString('phoneNumber') ?? '';
       _currentBalance = prefs.getInt('currentBalance') ?? 0;
-      _avatarUrl = prefs.getString('avatarUrl') ?? '';
+      _avatarUrl = avatarUrl;
       _totalBills = fetchedTotalBills;
       _achievements = fetchedAchievements;
       _isLoading = false;
@@ -198,11 +224,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.all(4.0),
                 child: ClipOval(
                   child: _avatarUrl.isNotEmpty
-                      ? Image.network(
-                          _avatarUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildInitialsAvatar(),
-                        )
+                      ? (_avatarUrl.startsWith('http')
+                          ? Image.network(
+                              _avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, e, s) => _buildInitialsAvatar(),
+                            )
+                          : Image.file(
+                              File(_avatarUrl),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, e, s) => _buildInitialsAvatar(),
+                            ))
                       : _buildInitialsAvatar(),
                 ),
               ),
@@ -684,7 +716,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          _buildSettingsItem(Icons.edit, 'Edit Profile', const Color(0xFF4C3EE3), false, onTap: () {}),
+          _buildSettingsItem(Icons.edit, 'Edit Profile', const Color(0xFF4C3EE3), false, onTap: () async {
+            final updated = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+            );
+            if (updated == true) _loadUserData();
+          }),
           _buildDivider(),
           _buildSettingsItem(Icons.info_outline, 'About Us', const Color(0xFF4C3EE3), false, onTap: () {}),
           _buildDivider(),
