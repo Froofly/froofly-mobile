@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'theme.dart';
 import 'general_inquiry_screen.dart';
 import 'order_related_screen.dart';
+import 'suggestion_screen.dart';
+import 'membership_faq_screen.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
@@ -103,6 +105,16 @@ class HelpSupportScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const OrderRelatedScreen()),
+          );
+        } else if (title == 'Suggestions') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SuggestionScreen()),
+          );
+        } else if (title == 'Froofly Membership') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const MembershipFaqScreen()),
           );
         }
       },

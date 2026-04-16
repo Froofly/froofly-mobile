@@ -46,21 +46,13 @@ class MembershipScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildTitleArea(),
             const SizedBox(height: 32),
+            _buildFreeCard(),
+            const SizedBox(height: 24),
             _buildPlusCard(),
             const SizedBox(height: 24),
             _buildProCard(),
             const SizedBox(height: 48),
-            Text(
-              'Compare Plans',
-              style: GoogleFonts.poppins(
-                color: AppTheme.textDark,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildCompareTable(),
-            const SizedBox(height: 48),
+
             _buildBottomBanner(),
             const SizedBox(height: 20),
           ],
@@ -138,7 +130,7 @@ class MembershipScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPlusCard() {
+  Widget _buildFreeCard() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -158,7 +150,7 @@ class MembershipScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Froofly Plus',
+            'Froofly Free',
             style: GoogleFonts.poppins(
               color: AppTheme.textDark,
               fontSize: 20,
@@ -170,7 +162,101 @@ class MembershipScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '\$4.99',
+                'Free',
+                style: GoogleFonts.poppins(
+                  color: AppTheme.textDark,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  height: 1.0,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4, left: 4),
+                child: Text(
+                  '/DEFAULT',
+                  style: GoogleFonts.poppins(
+                    color: AppTheme.textGrey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildFeatureRow(Icons.local_offer, 'Standard offers', '', true),
+          const SizedBox(height: 16),
+          _buildFeatureRow(Icons.account_balance_wallet, 'Basic cashback (5–10%)', '', true),
+          const SizedBox(height: 16),
+          _buildFeatureRow(Icons.access_time_filled, 'Limited daily claims (2–3)', '', true),
+          const SizedBox(height: 16),
+          _buildFeatureRow(Icons.verified_user, 'Standard verification time', '', true),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: OutlinedButton(
+              onPressed: () {},
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppTheme.textGrey, width: 1.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: Text(
+                'Current Plan',
+                style: GoogleFonts.poppins(
+                  color: AppTheme.textGrey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlusCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+               Text(
+                'Froofly Plus',
+                style: GoogleFonts.poppins(
+                  color: AppTheme.textDark,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+               const Icon(Icons.star, color: Color(0xFF4C3EE3), size: 24),
+            ]
+          ),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '₹99',
                 style: GoogleFonts.poppins(
                   color: AppTheme.textDark,
                   fontSize: 32,
@@ -192,11 +278,15 @@ class MembershipScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          _buildFeatureRow(Icons.bolt, '1.5x Multiplier', ' on all bill\nuploads', true),
+          _buildFeatureRow(Icons.bolt, '+50% extra coins', ' on every bill', true),
           const SizedBox(height: 16),
-          _buildFeatureRow(Icons.schedule, 'Early access to Flash Deals', '', true),
+          _buildFeatureRow(Icons.shopping_bag, 'Access to premium deals', '', true),
           const SizedBox(height: 16),
-          _buildFeatureRow(Icons.support_agent, '24/7 Support', '', true),
+          _buildFeatureRow(Icons.speed, 'Faster reward approval', '', true),
+          const SizedBox(height: 16),
+          _buildFeatureRow(Icons.history_toggle_off, '5–6 claims per day', '', true),
+          const SizedBox(height: 16),
+          _buildFeatureRow(Icons.card_giftcard, 'Joining bonus: ₹100 coins', '', true),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -210,7 +300,7 @@ class MembershipScreen extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Select Plan',
+                'Get Froofly Plus',
                 style: GoogleFonts.poppins(
                   color: const Color(0xFF4C3EE3),
                   fontWeight: FontWeight.bold,
@@ -235,10 +325,10 @@ class MembershipScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: const Color(0xFF4C3EE3), width: 2), // Blue border
+            border: Border.all(color: const Color(0xFFA61E4D), width: 2), // Magenta border
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4C3EE3).withOpacity(0.15),
+                color: const Color(0xFFA61E4D).withOpacity(0.15),
                 blurRadius: 20,
                 spreadRadius: 5,
                 offset: const Offset(0, 8),
@@ -267,7 +357,7 @@ class MembershipScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$9.99',
+                    '₹199',
                     style: GoogleFonts.poppins(
                       color: AppTheme.textDark,
                       fontSize: 32,
@@ -289,15 +379,17 @@ class MembershipScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              _buildFeatureRow(Icons.rocket_launch, '2.5x Multiplier on all bills', '', false),
+              _buildFeatureRow(Icons.rocket_launch, '2x coins on every bill', '', false),
               const SizedBox(height: 16),
-              _buildFeatureRow(Icons.local_offer, 'Exclusive VIP Merchant\nOffers', '', false),
+              _buildFeatureRow(Icons.local_offer, 'VIP merchant offers', '', false),
               const SizedBox(height: 16),
-              _buildFeatureRow(Icons.lock_open, 'Unlimited Reward Unlocks', '', false),
+              _buildFeatureRow(Icons.lock_open, 'Unlimited reward unlocks', '', false),
               const SizedBox(height: 16),
-              _buildFeatureRow(Icons.military_tech, 'Featured Badge on Profile', '', false),
+              _buildFeatureRow(Icons.speed, 'Instant / priority verification', '', false),
               const SizedBox(height: 16),
-              _buildFeatureRow(Icons.error_outline, 'Priority Customer Support', '', false),
+              _buildFeatureRow(Icons.card_giftcard, 'Joining bonus: ₹250 coins', '', false),
+              const SizedBox(height: 16),
+              _buildFeatureRow(Icons.military_tech, 'Profile badge', '', false),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -305,7 +397,7 @@ class MembershipScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4C3EE3),
+                    backgroundColor: const Color(0xFFA61E4D),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -389,97 +481,7 @@ class MembershipScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCompareTable() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9EEFB), // Very light pink table bg
-        borderRadius: BorderRadius.circular(32),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Text('FEATURE', style: _tableHeaderStyle(AppTheme.textGrey)),
-              ),
-              Expanded(
-                flex: 1,
-                child: Center(child: Text('PLUS', style: _tableHeaderStyle(AppTheme.textGrey))),
-              ),
-              Expanded(
-                flex: 1,
-                child: Center(child: Text('PRO', style: _tableHeaderStyle(const Color(0xFFA61E4D)))),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _tableRow('Bill Multiplier', '1.5x', '2.5x', true),
-          const SizedBox(height: 24),
-          _tableRow('Merchant\nAccess', 'Standard', 'VIP Only', true),
-          const SizedBox(height: 24),
-          _tableRow('Support\nSpeed', 'Standard', 'Priority', false),
-          const SizedBox(height: 24),
-          _tableRow('Monthly Limit', 'Cap: \$2k', 'Unlimited', true),
-        ],
-      ),
-    );
-  }
 
-  TextStyle _tableHeaderStyle(Color color) {
-    return GoogleFonts.poppins(
-      color: color,
-      fontSize: 8,
-      fontWeight: FontWeight.bold,
-      letterSpacing: 1.5,
-    );
-  }
-
-  Widget _tableRow(String feature, String plus, String pro, bool isProBlue) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            feature,
-            style: GoogleFonts.poppins(
-              color: AppTheme.textDark,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: Center(
-            child: Text(
-              plus,
-              style: GoogleFonts.poppins(
-                color: AppTheme.textDark,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: Center(
-            child: Text(
-              pro,
-              style: GoogleFonts.poppins(
-                color: isProBlue ? const Color(0xFF4C3EE3) : const Color(0xFF4C3EE3),
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildBottomBanner() {
     return Container(
@@ -534,5 +536,5 @@ class MembershipScreen extends StatelessWidget {
     );
   }
 
-}
 
+}

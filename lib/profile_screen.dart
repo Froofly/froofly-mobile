@@ -33,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   int _totalBills = 0;
   int _achievements = 0;
+  String _membershipPlan = 'Froofly Free';
 
   @override
   void initState() {
@@ -95,6 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _avatarUrl = avatarUrl;
       _totalBills = fetchedTotalBills;
       _achievements = fetchedAchievements;
+      _membershipPlan = prefs.getString('membershipPlan') ?? 'Froofly Free';
       _isLoading = false;
     });
   }
@@ -278,11 +280,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          _email,
-          style: GoogleFonts.poppins(
-            color: AppTheme.textGrey,
-            fontSize: 13,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: _membershipPlan == 'Froofly Free' ? Colors.grey.shade200 : const Color(0xFFEADBFF),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            _membershipPlan,
+            style: GoogleFonts.poppins(
+              color: _membershipPlan == 'Froofly Free' ? AppTheme.textGrey : primaryColor,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -302,16 +312,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-        const SizedBox(height: 8),
-        Text(
-          'PREMIUM MEMBER',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF6B5DE8),
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2.0,
-          ),
-        ),
       ],
     );
   }
