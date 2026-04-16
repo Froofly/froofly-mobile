@@ -249,7 +249,11 @@ class _MainScreenState extends State<MainScreen> {
             _buildOffstageNavigator(1, const RewardsMarketplace()),
             const Offstage(offstage: true, child: SizedBox()), // Placeholder for FAB position
             _buildOffstageNavigator(3, const ChallengesScreen()),
-            _buildOffstageNavigator(4, const ProfileScreen()),
+            _buildOffstageNavigator(4, ProfileScreen(onGoHome: () {
+              setState(() {
+                _selectedIndex = 0;
+              });
+            })),
           ],
         ),
         bottomNavigationBar: _buildBottomNav(),

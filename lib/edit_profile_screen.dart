@@ -196,7 +196,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('userId');
-    final name = _nameController.text.trim();
 
     try {
       // 1. Save Name to SharedPreferences

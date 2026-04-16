@@ -13,9 +13,11 @@ import 'notification_preferences_screen.dart';
 import 'help_support_screen.dart';
 import 'account_privacy_screen.dart';
 import 'edit_profile_screen.dart';
+import 'about_us_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final VoidCallback? onGoHome;
+  const ProfileScreen({super.key, this.onGoHome});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -25,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _fullName = '';
   String _email = '';
   String _phoneNumber = '';
+  String _frooflyId = '';
   int _currentBalance = 0;
   String _avatarUrl = '';
   bool _isLoading = true;
@@ -87,6 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _fullName = prefs.getString('fullName') ?? '';
       _email = prefs.getString('email') ?? '';
       _phoneNumber = prefs.getString('phoneNumber') ?? '';
+      _frooflyId = prefs.getString('frooflyId') ?? '';
       _currentBalance = prefs.getInt('currentBalance') ?? 0;
       _avatarUrl = avatarUrl;
       _totalBills = fetchedTotalBills;
@@ -159,7 +163,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: primaryColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (widget.onGoHome != null) {
+              widget.onGoHome!();
+            } else {
+              Navigator.pop(context);
+            }
+          },
         ),
         title: Text(
           'My Profile',
@@ -172,8 +182,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, color: primaryColor),
-            onPressed: () {},
+            icon: Icon(Icons.notifications_none_outlined, color: primaryColor),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationPreferencesScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -185,7 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 16),
-                  _buildAvatarSection(),
+                  _buildAvatarSection(primaryColor),
                   const SizedBox(height: 16),
                   _buildBalanceCard(context, primaryColor),
                   const SizedBox(height: 16),
@@ -208,7 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ─── Avatar ──────────────────────────────────────────────────────────────
 
-  Widget _buildAvatarSection() {
+  Widget _buildAvatarSection(Color primaryColor) {
     return Column(
       children: [
         Stack(
@@ -270,7 +285,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontSize: 13,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
+        if (_frooflyId.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'ID: $_frooflyId',
+              style: GoogleFonts.poppins(
+                color: primaryColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
         Text(
           'PREMIUM MEMBER',
           style: GoogleFonts.poppins(
@@ -724,7 +756,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (updated == true) _loadUserData();
           }),
           _buildDivider(),
-          _buildSettingsItem(Icons.info_outline, 'About Us', const Color(0xFF4C3EE3), false, onTap: () {}),
+          _buildSettingsItem(Icons.info_outline, 'About Us', const Color(0xFF4C3EE3), false, onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutUsScreen()),
+            );
+          }),
           _buildDivider(),
           _buildSettingsItem(Icons.shopping_bag_outlined, 'Orders', const Color(0xFF4C3EE3), false,
               onTap: () {}),

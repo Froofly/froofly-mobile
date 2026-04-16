@@ -35,6 +35,7 @@ class _SignInScreenState extends State<SignInScreen> {
           final data = jsonDecode(response.body);
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('userId', data['userId'] ?? '');
+          await prefs.setString('frooflyId', data['frooflyId'] ?? '');
           await prefs.setString('email', data['email'] ?? '');
           await prefs.setString('fullName', data['fullName'] ?? '');
           await prefs.setString('phoneNumber', data['phoneNumber'] ?? '');

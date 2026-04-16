@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'theme.dart';
+import 'general_inquiry_screen.dart';
+import 'order_related_screen.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
@@ -46,13 +48,13 @@ class HelpSupportScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildSettingsItem(Icons.info_outline, 'General Inquiry', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.info_outline, 'General Inquiry', const Color(0xFF4C3EE3)),
               _buildDivider(),
-              _buildSettingsItem(Icons.lightbulb_outline, 'Suggestions', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.lightbulb_outline, 'Suggestions', const Color(0xFF4C3EE3)),
               _buildDivider(),
-              _buildSettingsItem(Icons.star_outline, 'Froofly Membership', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.star_outline, 'Froofly Membership', const Color(0xFF4C3EE3)),
               _buildDivider(),
-              _buildSettingsItem(Icons.local_shipping_outlined, 'Order Related', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.local_shipping_outlined, 'Order Related', const Color(0xFF4C3EE3)),
             ],
           ),
         ),
@@ -71,7 +73,7 @@ class HelpSupportScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, Color color) {
+  Widget _buildSettingsItem(BuildContext context, IconData icon, String title, Color color) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       leading: Container(
@@ -91,7 +93,19 @@ class HelpSupportScreen extends StatelessWidget {
         ),
       ),
       trailing: Icon(Icons.chevron_right, color: AppTheme.textGrey.withOpacity(0.5), size: 24),
-      onTap: () {},
+      onTap: () {
+        if (title == 'General Inquiry') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const GeneralInquiryScreen()),
+          );
+        } else if (title == 'Order Related') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const OrderRelatedScreen()),
+          );
+        }
+      },
     );
   }
 }
