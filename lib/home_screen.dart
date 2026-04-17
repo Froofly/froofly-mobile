@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'theme.dart';
 import 'widgets/deal_card.dart';
+import 'balance_manager.dart';
 
 class _DealData {
   final String imagePath;
@@ -257,27 +258,35 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
         ),
       ),
       actions: [
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: AppTheme.lightLavender,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.monetization_on, color: AppTheme.primaryPurple, size: 16),
-              const SizedBox(width: 4),
-              Text(
-                '1,250',
-                style: GoogleFonts.poppins(
-                  color: AppTheme.primaryPurple,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
+        ValueListenableBuilder<int>(
+          valueListenable: BalanceManager.instance.balance,
+          builder: (context, currentBalance, child) {
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.lightLavender,
+                borderRadius: BorderRadius.circular(20),
               ),
-            ],
-          ),
+              child: Row(
+                children: [
+                  const Icon(Icons.monetization_on, color: AppTheme.primaryPurple, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    currentBalance.toString().replaceAllMapped(
+                      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                      (Match m) => '${m[1]},',
+                    ),
+                    style: GoogleFonts.poppins(
+                      color: AppTheme.primaryPurple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
         IconButton(
           icon: const Icon(Icons.notifications, color: AppTheme.primaryPurple),

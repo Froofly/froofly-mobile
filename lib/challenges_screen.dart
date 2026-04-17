@@ -26,27 +26,35 @@ class ChallengesScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEADBFF),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.monetization_on, color: Color(0xFF4C3EE3), size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  '1,250',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF1E1C38),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+          ValueListenableBuilder<int>(
+            valueListenable: BalanceManager.instance.balance,
+            builder: (context, currentBalance, child) {
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEADBFF),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ],
-            ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.monetization_on, color: Color(0xFF4C3EE3), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      currentBalance.toString().replaceAllMapped(
+                        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                        (Match m) => '${m[1]},',
+                      ),
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF1E1C38),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           IconButton(
             icon: Icon(Icons.notifications, color: primaryColor),

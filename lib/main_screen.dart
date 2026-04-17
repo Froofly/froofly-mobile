@@ -14,6 +14,7 @@ import 'profile_screen.dart';
 import 'theme.dart';
 import 'coins_reward_screen.dart';
 import 'transaction_failed_screen.dart';
+import 'balance_manager.dart';
 import 'dart:math';
 
 class MainScreen extends StatefulWidget {
@@ -179,6 +180,12 @@ class _MainScreenState extends State<MainScreen> {
 
       final data = jsonDecode(response.body);
       final int coins = data['coins'] ?? 0;
+      final int totalBalance = data['currentBalance'] ?? 0;
+
+      // Update global balance
+      if (totalBalance > 0) {
+        await BalanceManager.instance.updateBalance(totalBalance);
+      }
 
       if (mounted) {
         Navigator.pop(context); // pop loading dialog
