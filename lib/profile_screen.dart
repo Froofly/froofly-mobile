@@ -14,6 +14,7 @@ import 'help_support_screen.dart';
 import 'account_privacy_screen.dart';
 import 'edit_profile_screen.dart';
 import 'about_us_screen.dart';
+import 'invite_friends_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onGoHome;
@@ -35,6 +36,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _achievements = 0;
   String _membershipPlan = 'Froofly Free';
 
+  List<double> _coinsEarnedList = [0, 0, 0, 0, 0, 0, 0];
+  String _percentageChange = '0%';
+  List<Map<String, dynamic>> _uploadCategories = [];
+
   @override
   void initState() {
     super.initState();
@@ -43,11 +48,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    
+    // Immediately update UI with local data
+    setState(() {
+      _fullName = prefs.getString('fullName') ?? '';
+      _email = prefs.getString('email') ?? '';
+      _phoneNumber = prefs.getString('phoneNumber') ?? '';
+      _frooflyId = prefs.getString('frooflyId') ?? '';
+      _currentBalance = prefs.getInt('currentBalance') ?? 0;
+      _membershipPlan = prefs.getString('membershipPlan') ?? 'Froofly Free';
+      _avatarUrl = prefs.getString('avatarUrl') ?? '';
+    });
+
     final userId = prefs.getString('userId');
-    String avatarUrl = prefs.getString('avatarUrl') ?? '';
+    String avatarUrl = _avatarUrl;
 
     int fetchedTotalBills = 0;
     int fetchedAchievements = 0;
+    List<double> fetchedCoinsList = _coinsEarnedList;
+    String fetchedPercentage = _percentageChange;
+    List<Map<String, dynamic>> fetchedCategories = _uploadCategories;
 
     if (userId != null && userId.isNotEmpty) {
       try {
@@ -57,6 +77,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final data = jsonDecode(statsResponse.body);
           fetchedTotalBills = data['totalBills'] ?? 0;
           fetchedAchievements = data['achievements'] ?? 0;
+          if (data['analytics'] != null) {
+            final a = data['analytics'];
+            if (a['coinsEarnedList'] != null) {
+              fetchedCoinsList = List<double>.from(a['coinsEarnedList'].map((x) => (x as num).toDouble()));
+            }
+            if (a['percentageChange'] != null) {
+              fetchedPercentage = a['percentageChange'];
+            }
+            if (a['categories'] != null) {
+              fetchedCategories = List<Map<String, dynamic>>.from(a['categories']);
+            }
+          }
         }
 
         // 2. Sync Avatar from Upstash Redis if local is missing
@@ -88,15 +120,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
 
     setState(() {
-      _fullName = prefs.getString('fullName') ?? '';
-      _email = prefs.getString('email') ?? '';
-      _phoneNumber = prefs.getString('phoneNumber') ?? '';
-      _frooflyId = prefs.getString('frooflyId') ?? '';
-      _currentBalance = prefs.getInt('currentBalance') ?? 0;
       _avatarUrl = avatarUrl;
       _totalBills = fetchedTotalBills;
       _achievements = fetchedAchievements;
-      _membershipPlan = prefs.getString('membershipPlan') ?? 'Froofly Free';
+      _coinsEarnedList = fetchedCoinsList;
+      _percentageChange = fetchedPercentage;
+      _uploadCategories = fetchedCategories;
       _isLoading = false;
     });
   }
@@ -616,7 +645,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '+12%',
+                  _percentageChange,
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF2E9C68),
                     fontSize: 10,
@@ -631,7 +660,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: 80,
             child: CustomPaint(
               size: const Size(double.infinity, 80),
-              painter: _CurvedChartPainter(),
+              painter: _CurvedChartPainter(_coinsEarnedList),
             ),
           ),
           const SizedBox(height: 16),
@@ -681,11 +710,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildCategoryProgress('FOOD', '45%', 0.45, const Color(0xFF4C3EE3)),
-          const SizedBox(height: 16),
-          _buildCategoryProgress('RETAIL', '30%', 0.30, const Color(0xFF7ADCF6)),
-          const SizedBox(height: 16),
-          _buildCategoryProgress('HEALTH', '25%', 0.25, const Color(0xFFFD8AAB)),
+          if (_uploadCategories.isEmpty)
+            Text(
+              'No recent spending categories.',
+              style: GoogleFonts.poppins(
+                color: AppTheme.textGrey.withOpacity(0.8),
+                fontSize: 12,
+              ),
+            ),
+          ..._uploadCategories.map((c) {
+             final hexStr = c['colorHex'] as String;
+             final colorVal = int.tryParse(hexStr) ?? 0xFF4C3EE3;
+             return Column(
+               children: [
+                 _buildCategoryProgress(c['name'], c['percentage'], c['value'], Color(colorVal)),
+                 const SizedBox(height: 16),
+               ],
+             );
+          }),
         ],
       ),
     );
@@ -791,7 +833,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }),
           _buildDivider(),
           _buildSettingsItem(Icons.share, 'Invite your Friends', const Color(0xFF4C3EE3), false,
-              onTap: () {}),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InviteFriendsScreen()),
+                );
+              }),
           _buildDivider(),
           _buildSettingsItem(Icons.logout, 'Log Out', const Color(0xFFD80B57), true, onTap: _logout),
         ],
@@ -843,8 +890,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 // ─── Chart painter ────────────────────────────────────────────────────────────
 
 class _CurvedChartPainter extends CustomPainter {
+  final List<double> dataPoints;
+
+  _CurvedChartPainter(this.dataPoints);
+
   @override
   void paint(Canvas canvas, Size size) {
+    if (dataPoints.isEmpty) return;
+
     final paint = Paint()
       ..shader = const LinearGradient(
         colors: [Color(0xFF4C3EE3), Color(0xFF7ADCF6)],
@@ -855,35 +908,29 @@ class _CurvedChartPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
+    double maxVal = dataPoints.reduce((a, b) => a > b ? a : b);
+    if (maxVal == 0) maxVal = 1;
+
     final path = Path();
+    List<Offset> points = [];
+    for (int i = 0; i < dataPoints.length; i++) {
+      double x = size.width * (i / (dataPoints.length - 1));
+      // scale y so data points fill height but have padding
+      double y = size.height - ((dataPoints[i] / maxVal) * size.height * 0.8) - (size.height * 0.1);
+      points.add(Offset(x, y));
+    }
 
-    final p0 = Offset(0, size.height * 0.8);
-    final p1 = Offset(size.width * 0.2, size.height * 0.5);
-    final p2 = Offset(size.width * 0.4, size.height * 0.8);
-    final p3 = Offset(size.width * 0.6, size.height * 0.1);
-    final p4 = Offset(size.width * 0.8, size.height * 0.7);
-    final p5 = Offset(size.width, size.height * 0.2);
-
-    path.moveTo(p0.dx, p0.dy);
-    _addBezierCurve(path, p0, p1);
-    _addBezierCurve(path, p1, p2);
-    _addBezierCurve(path, p2, p3);
-    _addBezierCurve(path, p3, p4);
-    _addBezierCurve(path, p4, p5);
+    path.moveTo(points[0].dx, points[0].dy);
+    for (int i = 0; i < points.length - 1; i++) {
+        _addBezierCurve(path, points[i], points[i+1]);
+    }
 
     canvas.drawPath(path, paint);
 
     final dotPaintCyan = Paint()
       ..color = const Color(0xFF7ADCF6)
       ..style = PaintingStyle.fill;
-    final dotPaintBlue = Paint()
-      ..color = const Color(0xFF4C3EE3)
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(Offset(size.width * 0.3, size.height * 0.65), 3, dotPaintBlue);
-    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.45), 3, dotPaintBlue);
-    canvas.drawCircle(Offset(size.width * 0.7, size.height * 0.4), 3, dotPaintBlue);
-    canvas.drawCircle(p5, 4, dotPaintCyan);
+    canvas.drawCircle(points.last, 4, dotPaintCyan);
   }
 
   void _addBezierCurve(Path path, Offset start, Offset end) {
@@ -895,5 +942,7 @@ class _CurvedChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CurvedChartPainter oldDelegate) {
+    return true;
+  }
 }

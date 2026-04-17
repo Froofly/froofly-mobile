@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import 'theme.dart';
 
@@ -201,22 +202,28 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       // 1. Save Name to SharedPreferences
       await prefs.setString('fullName', name);
 
-      // 2. If new image picked, upload to Upstash Redis via Backend
+      // 2. If new image picked, store locally and upload to Upstash Redis via Backend
       if (_pickedImage != null && userId != null) {
         final bytes = await _pickedImage!.readAsBytes();
+        
+        // Cache locally first for immediate persistence
+        final dir = await getApplicationDocumentsDirectory();
+        final localFile = File('${dir.path}/avatar_$userId.png');
+        await localFile.writeAsBytes(bytes);
+        await prefs.setString('avatarUrl', localFile.path);
+
         final base64Image = base64Encode(bytes);
 
         final response = await http.post(
           Uri.parse('https://froofly-backend.onrender.com/avatar/$userId'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'base64': base64Image}),
-        );
+        ).timeout(const Duration(seconds: 15), onTimeout: () {
+          return http.Response('Timeout', 408);
+        });
 
-        if (response.statusCode == 201 || response.statusCode == 200) {
-          // Success! Also save local path for immediate display
-          await prefs.setString('avatarUrl', _pickedImage!.path);
-        } else {
-          debugPrint('Failed to upload to Redis: ${response.body}');
+        if (response.statusCode != 201 && response.statusCode != 200) {
+          debugPrint('Failed to upload to Redis: ${response.statusCode} - ${response.body}');
         }
       } else if (_currentAvatarUrl.isEmpty) {
         await prefs.setString('avatarUrl', '');
