@@ -13,6 +13,7 @@ import 'challenges_screen.dart';
 import 'profile_screen.dart';
 import 'theme.dart';
 import 'coins_reward_screen.dart';
+import 'transaction_failed_screen.dart';
 import 'dart:math';
 
 class MainScreen extends StatefulWidget {
@@ -140,7 +141,7 @@ class _MainScreenState extends State<MainScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.0.2.2:3000/payment/upload-screenshot'),
+        Uri.parse('https://froofly-backend.onrender.com/payment/upload-screenshot'),
       );
       
       request.fields['userId'] = userId;
@@ -152,9 +153,28 @@ class _MainScreenState extends State<MainScreen> {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
+      // 422 = transaction not completed keyword not found
+      if (response.statusCode == 422) {
+        if (mounted) {
+          Navigator.pop(context); // pop loading dialog
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              opaque: false,
+              barrierColor: Colors.black54,
+              pageBuilder: (_, __, ___) => const TransactionFailedScreen(),
+              transitionsBuilder: (_, animation, __, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            ),
+          );
+        }
+        return;
+      }
+
       if (response.statusCode != 201 && response.statusCode != 200) {
         final errorBody = jsonDecode(response.body);
-        throw errorBody['message'] ?? 'Extraction failed';
+        throw errorBody['message'] ?? 'Upload failed';
       }
 
       final data = jsonDecode(response.body);
@@ -167,7 +187,7 @@ class _MainScreenState extends State<MainScreen> {
           MaterialPageRoute(
             builder: (context) => CoinsRewardScreen(
               coins: coins,
-              amount: data['amount']?.toDouble() ?? 0.0,
+              amount: (data['amount'] ?? 0).toDouble(),
               transactionId: data['transactionId'] ?? '',
               isJackpot: data['isJackpot'] ?? false,
             ),
@@ -179,7 +199,10 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         Navigator.pop(context); // pop loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     }
