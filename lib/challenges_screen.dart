@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'theme.dart';
+import 'balance_manager.dart';
 
 class ChallengesScreen extends StatelessWidget {
   const ChallengesScreen({super.key});

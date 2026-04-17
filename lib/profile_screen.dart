@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import 'theme.dart';
+import 'balance_manager.dart';
 import 'membership_screen.dart';
 import 'sign_in_screen.dart';
 import 'notification_preferences_screen.dart';
