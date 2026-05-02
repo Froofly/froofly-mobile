@@ -82,7 +82,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
+    final bgColor = const Color(0xFFF9F9F9);
     final textDark = AppTheme.textDark;
 
     return Scaffold(
@@ -91,7 +91,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF4C3EE3)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0A3D62)),
           onPressed: () {
             if (!_isLoading) Navigator.pop(context);
           },
@@ -107,7 +107,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD80B57)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37)))
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
@@ -156,7 +156,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                                   fontSize: 13,
                                 ),
                               ),
-                              activeColor: const Color(0xFF4C3EE3),
+                              activeColor: const Color(0xFF0A3D62),
                               value: reason,
                               groupValue: _selectedReason,
                               onChanged: (value) {
@@ -219,8 +219,8 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                   ElevatedButton(
                     onPressed: _deleteAccount,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFDEDF4),
-                      foregroundColor: const Color(0xFFD80B57), // Red styling indicating dangerous action
+                      backgroundColor: const Color(0xFFF9F9F9),
+                      foregroundColor: const Color(0xFFD4AF37), // Red styling indicating dangerous action
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

@@ -11,7 +11,7 @@ class HelpSupportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
+    final bgColor = const Color(0xFFF9F9F9);
     final textDark = AppTheme.textDark;
     
     return Scaffold(
@@ -20,7 +20,7 @@ class HelpSupportScreen extends StatelessWidget {
         backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF4C3EE3)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0A3D62)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -50,13 +50,13 @@ class HelpSupportScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildSettingsItem(context, Icons.info_outline, 'General Inquiry', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.info_outline, 'General Inquiry', const Color(0xFF0A3D62)),
               _buildDivider(),
-              _buildSettingsItem(context, Icons.lightbulb_outline, 'Suggestions', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.lightbulb_outline, 'Suggestions', const Color(0xFF0A3D62)),
               _buildDivider(),
-              _buildSettingsItem(context, Icons.star_outline, 'Froofly Membership', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.star_outline, 'Froofly Membership', const Color(0xFF0A3D62)),
               _buildDivider(),
-              _buildSettingsItem(context, Icons.local_shipping_outlined, 'Order Related', const Color(0xFF4C3EE3)),
+              _buildSettingsItem(context, Icons.local_shipping_outlined, 'Order Related', const Color(0xFF0A3D62)),
             ],
           ),
         ),
@@ -81,7 +81,7 @@ class HelpSupportScreen extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: const BoxDecoration(
-          color: Color(0xFFEADBFF),
+          color: Color(0xFFE6EBF0),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: color, size: 20),

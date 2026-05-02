@@ -12,9 +12,9 @@ class RewardsMarketplace extends StatefulWidget {
 }
 
 class _RewardsMarketplaceState extends State<RewardsMarketplace> {
-  final Color bgColor = const Color(0xFFFDF7FC);
-  final Color primaryColor = const Color(0xFF4C3EE3);
-  final Color coinPillColor = const Color(0xFFEADBFF);
+  final Color bgColor = const Color(0xFFF9F9F9);
+  final Color primaryColor = const Color(0xFF0A3D62);
+  final Color coinPillColor = const Color(0xFFE6EBF0);
 
   // All available categories
   final List<Map<String, dynamic>> _allCategories = [
@@ -200,7 +200,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFFFAF1FB),
+              color: const Color(0xFFF9F9F9),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -249,7 +249,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
               width: 70,
               height: 70,
               decoration: BoxDecoration(
-                color: const Color(0xFFFAF1FB),
+                color: const Color(0xFFF9F9F9),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -459,7 +459,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3EFFF),
+                    color: const Color(0xFFF9F9F9),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(iconData, color: primaryColor, size: 18),
@@ -550,7 +550,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
         margin: const EdgeInsets.symmetric(horizontal: 6),
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          color: const Color(0xFFFAF1FB),
+          color: const Color(0xFFF9F9F9),
           borderRadius: BorderRadius.circular(30),
         ),
         child: Column(

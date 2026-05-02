@@ -7,7 +7,7 @@ class OrderRelatedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
+    final bgColor = const Color(0xFFF9F9F9);
     final textDark = AppTheme.textDark;
 
     final List<Map<String, String>> faqs = [
@@ -81,7 +81,7 @@ class OrderRelatedScreen extends StatelessWidget {
         backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF4C3EE3)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0A3D62)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -124,8 +124,8 @@ class OrderRelatedScreen extends StatelessWidget {
       child: Theme(
         data: ThemeData(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          collapsedIconColor: const Color(0xFF4C3EE3),
-          iconColor: const Color(0xFF4C3EE3),
+          collapsedIconColor: const Color(0xFF0A3D62),
+          iconColor: const Color(0xFF0A3D62),
           tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           childrenPadding:
               const EdgeInsets.only(left: 20, right: 20, bottom: 20),

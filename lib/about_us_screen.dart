@@ -7,7 +7,7 @@ class AboutUsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
+    final bgColor = const Color(0xFFF9F9F9);
     final textDark = AppTheme.textDark;
 
     return Scaffold(
@@ -16,7 +16,7 @@ class AboutUsScreen extends StatelessWidget {
         backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF4C3EE3)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0A3D62)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -38,11 +38,11 @@ class AboutUsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFEADBFF),
+                color: const Color(0xFFE6EBF0),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4C3EE3).withOpacity(0.2),
+                    color: const Color(0xFF0A3D62).withOpacity(0.2),
                     blurRadius: 30,
                     spreadRadius: 5,
                     offset: const Offset(0, 10),
@@ -52,7 +52,7 @@ class AboutUsScreen extends StatelessWidget {
               child: const Icon(
                 Icons.volunteer_activism_outlined,
                 size: 64,
-                color: Color(0xFF4C3EE3),
+                color: Color(0xFF0A3D62),
               ),
             ),
             const SizedBox(height: 32),
@@ -102,14 +102,14 @@ class AboutUsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4C3EE3), Color(0xFF7ADCF6)],
+                  colors: [Color(0xFF0A3D62), Color(0xFFD4AF37)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4C3EE3).withOpacity(0.3),
+                    color: const Color(0xFF0A3D62).withOpacity(0.3),
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),

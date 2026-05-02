@@ -24,8 +24,8 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
   int _coinsEarned = 0;
   List<dynamic> _friends = [];
 
-  static const _primaryColor = Color(0xFF4C3EE3);
-  static const _bgColor = Color(0xFFFCF6FB);
+  static const _primaryColor = Color(0xFF0A3D62);
+  static const _bgColor = Color(0xFFF9F9F9);
 
   @override
   void initState() {
@@ -299,7 +299,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: isJoined ? const Color(0xFFEADBFF) : const Color(0xFFFCEFE5),
+            backgroundColor: isJoined ? const Color(0xFFE6EBF0) : const Color(0xFFFCEFE5),
             radius: 20,
             child: Text(
               initials,
@@ -362,11 +362,11 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       child: Column(
         children: [
           _buildStepRow(1, 'Share your invite link', 'Copy your unique link or code and send it to friends via WhatsApp, email, or social media.'),
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF3EFFF)),
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF9F9F9)),
           _buildStepRow(2, 'Friend signs up', 'Your friend clicks the link and creates a new account. Existing users are not eligible.'),
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF3EFFF)),
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF9F9F9)),
           _buildStepRow(3, 'You both earn coins', 'You get 100 coins. Your friend gets 50 welcome coins when they activate.'),
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF3EFFF)),
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF9F9F9)),
           _buildStepRow(4, 'Bonus on activity', 'Earn up to 1500 extra coins when 3, 5 or 10 of your referred friends activate.'),
         ],
       ),
@@ -378,7 +378,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CircleAvatar(
-          backgroundColor: const Color(0xFFEADBFF),
+          backgroundColor: const Color(0xFFE6EBF0),
           radius: 16,
           child: Text(
             number.toString(),
@@ -413,13 +413,13 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       child: Column(
         children: [
           _buildRewardRow(Icons.access_time_filled, 'Per referral (join)', 'Friend signs up using your link', '100 coins', const Color(0xFFD3C8FF), const Color(0xFF6750A4)),
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF3EFFF)),
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF9F9F9)),
           _buildRewardRow(Icons.star_rounded, 'Activity bonus', 'Friend completes their first action', '50 coins', const Color(0xFFD1F2EB), const Color(0xFF1E8449)),
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF3EFFF)),
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF9F9F9)),
           _buildRewardRow(Icons.arrow_forward_rounded, '3rd friend milestone', 'Invite 3 friends who join', '300 coins', const Color(0xFFFFE0B2), const Color(0xFFE65100)),
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF3EFFF)),
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF9F9F9)),
           _buildRewardRow(Icons.arrow_forward_rounded, '5th friend milestone', 'Invite 5 friends who join', '500 coins', const Color(0xFFFFE0B2), const Color(0xFFE65100)),
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF3EFFF)),
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF9F9F9)),
           _buildRewardRow(Icons.shopping_bag_rounded, '10th friend milestone', 'Invite 10 friends who join', '1500 coins', const Color(0xFFD6EAF8), const Color(0xFF154360)),
         ],
       ),

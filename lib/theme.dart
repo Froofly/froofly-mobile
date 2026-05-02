@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primaryPurple = Color(0xFF4C3EE3); // Logo & FAB
-  static const Color backgroundLight = Color(0xFFF9F5FA); // Overall background
-  static const Color magenta = Color(0xFFD80B57); // Selected category & Flash Deal
-  static const Color lightLavender = Color(0xFFEADBFF); // Unselected category & Coin pill
-  static const Color textDark = Color(0xFF1E1C38);
+  static const Color classicNavy = Color(0xFF0A3D62); // Logo & FAB (Primary)
+  static const Color ivoryWhite = Color(0xFFF9F9F9); // Overall background
+  static const Color champaignGold = Color(0xFFD4AF37); // Selected category & Flash Deal (Accent)
+  static const Color richCharcoal = Color(0xFF2D3436); // Text dark
+  
+  static const Color primaryPurple = classicNavy; // Keeping name for compatibility, but it's Navy now
+  static const Color backgroundLight = ivoryWhite; 
+  static const Color magenta = champaignGold; 
+  static const Color lightLavender = Color(0xFFE6EBF0); // Modified to fit Navy better (lighter navy/grey)
+  static const Color textDark = richCharcoal;
   static const Color textGrey = Color(0xFF88849E);
-  static const Color lightBlue = Color(0xFF7ADCF6); // Circular arrow button
+  static const Color lightBlue = Color(0xFFD4AF37); // Use gold for arrow buttons instead of light blue
   
   static ThemeData get themeData {
     return ThemeData(

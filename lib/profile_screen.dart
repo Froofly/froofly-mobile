@@ -154,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               'Log Out',
               style: GoogleFonts.poppins(
-                color: const Color(0xFFD80B57),
+                color: const Color(0xFFD4AF37),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -184,8 +184,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
-    final primaryColor = const Color(0xFF4C3EE3);
+    final bgColor = const Color(0xFFF9F9F9);
+    final primaryColor = const Color(0xFF0A3D62);
     final textDark = AppTheme.textDark;
 
     return Scaffold(
@@ -265,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF4C3EE3), width: 3),
+                border: Border.all(color: const Color(0xFF0A3D62), width: 3),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
@@ -292,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF4C3EE3),
+                  color: Color(0xFF0A3D62),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.verified, color: Colors.white, size: 14),
@@ -313,7 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: _membershipPlan == 'Froofly Free' ? Colors.grey.shade200 : const Color(0xFFEADBFF),
+            color: _membershipPlan == 'Froofly Free' ? Colors.grey.shade200 : const Color(0xFFE6EBF0),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
@@ -350,7 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF4C3EE3), Color(0xFF7ADCF6)],
+          colors: [Color(0xFF0A3D62), Color(0xFFD4AF37)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -424,7 +424,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Text(
                       'Coins',
                       style: GoogleFonts.poppins(
-                        color: const Color(0xFF7DE4FF),
+                        color: const Color(0xFFD4AF37),
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -441,7 +441,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7DE4FF),
+                  backgroundColor: const Color(0xFFD4AF37),
                   foregroundColor: AppTheme.textDark,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
@@ -487,7 +487,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildInfoRow(Icons.email_outlined, 'Email', _email.isNotEmpty ? _email : '—', primaryColor),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1, thickness: 1, color: Color(0xFFF3EFFF)),
+            child: Divider(height: 1, thickness: 1, color: Color(0xFFF9F9F9)),
           ),
           _buildInfoRow(
             Icons.phone_outlined,
@@ -506,7 +506,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFFEADBFF),
+            color: const Color(0xFFE6EBF0),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: primaryColor, size: 18),
@@ -557,7 +557,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: const Color(0xFFFAF1FB),
+          color: const Color(0xFFF9F9F9),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
@@ -606,7 +606,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'LAST 7 DAYS',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF4C3EE3),
+            color: const Color(0xFF0A3D62),
             fontSize: 10,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.0,
@@ -729,7 +729,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ..._uploadCategories.map((c) {
              final hexStr = c['colorHex'] as String;
-             final colorVal = int.tryParse(hexStr) ?? 0xFF4C3EE3;
+             final colorVal = int.tryParse(hexStr) ?? 0xFF0A3D62;
              return Column(
                children: [
                  _buildCategoryProgress(c['name'], c['percentage'], c['value'], Color(colorVal)),
@@ -761,7 +761,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           height: 6,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFFF3EFFF),
+            color: const Color(0xFFF9F9F9),
             borderRadius: BorderRadius.circular(3),
           ),
           child: FractionallySizedBox(
@@ -799,7 +799,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          _buildSettingsItem(Icons.edit, 'Edit Profile', const Color(0xFF4C3EE3), false, onTap: () async {
+          _buildSettingsItem(Icons.edit, 'Edit Profile', const Color(0xFF0A3D62), false, onTap: () async {
             final updated = await Navigator.push<bool>(
               context,
               MaterialPageRoute(builder: (_) => const EditProfileScreen()),
@@ -807,17 +807,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (updated == true) _loadUserData();
           }),
           _buildDivider(),
-          _buildSettingsItem(Icons.info_outline, 'About Us', const Color(0xFF4C3EE3), false, onTap: () {
+          _buildSettingsItem(Icons.info_outline, 'About Us', const Color(0xFF0A3D62), false, onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AboutUsScreen()),
             );
           }),
           _buildDivider(),
-          _buildSettingsItem(Icons.shopping_bag_outlined, 'Orders', const Color(0xFF4C3EE3), false,
+          _buildSettingsItem(Icons.shopping_bag_outlined, 'Orders', const Color(0xFF0A3D62), false,
               onTap: () {}),
           _buildDivider(),
-          _buildSettingsItem(Icons.notifications, 'Notification Preferences', const Color(0xFF4C3EE3), false,
+          _buildSettingsItem(Icons.notifications, 'Notification Preferences', const Color(0xFF0A3D62), false,
               onTap: () {
                 Navigator.push(
                   context,
@@ -825,7 +825,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }),
           _buildDivider(),
-          _buildSettingsItem(Icons.help_outline, 'Help & Support', const Color(0xFF4C3EE3), false,
+          _buildSettingsItem(Icons.help_outline, 'Help & Support', const Color(0xFF0A3D62), false,
               onTap: () {
                 Navigator.push(
                   context,
@@ -833,7 +833,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }),
           _buildDivider(),
-          _buildSettingsItem(Icons.privacy_tip_outlined, 'Account Privacy', const Color(0xFF4C3EE3), false,
+          _buildSettingsItem(Icons.privacy_tip_outlined, 'Account Privacy', const Color(0xFF0A3D62), false,
               onTap: () {
                 Navigator.push(
                   context,
@@ -841,7 +841,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }),
           _buildDivider(),
-          _buildSettingsItem(Icons.share, 'Invite your Friends', const Color(0xFF4C3EE3), false,
+          _buildSettingsItem(Icons.share, 'Invite your Friends', const Color(0xFF0A3D62), false,
               onTap: () {
                 Navigator.push(
                   context,
@@ -849,7 +849,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }),
           _buildDivider(),
-          _buildSettingsItem(Icons.logout, 'Log Out', const Color(0xFFD80B57), true, onTap: _logout),
+          _buildSettingsItem(Icons.logout, 'Log Out', const Color(0xFFD4AF37), true, onTap: _logout),
         ],
       ),
     );
@@ -873,7 +873,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: hideArrow ? const Color(0xFFFDEDF4) : const Color(0xFFEADBFF),
+          color: hideArrow ? const Color(0xFFF9F9F9) : const Color(0xFFE6EBF0),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: color, size: 20),
@@ -881,7 +881,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       title: Text(
         title,
         style: GoogleFonts.poppins(
-          color: hideArrow ? const Color(0xFFD80B57) : AppTheme.textDark,
+          color: hideArrow ? const Color(0xFFD4AF37) : AppTheme.textDark,
           fontSize: 14,
           fontWeight: FontWeight.bold,
         ),
@@ -909,7 +909,7 @@ class _CurvedChartPainter extends CustomPainter {
 
     final paint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF4C3EE3), Color(0xFF7ADCF6)],
+        colors: [Color(0xFF0A3D62), Color(0xFFD4AF37)],
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
@@ -937,7 +937,7 @@ class _CurvedChartPainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final dotPaintCyan = Paint()
-      ..color = const Color(0xFF7ADCF6)
+      ..color = const Color(0xFFD4AF37)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(points.last, 4, dotPaintCyan);
   }

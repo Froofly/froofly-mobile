@@ -8,8 +8,8 @@ class MembershipScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
-    final primaryColor = const Color(0xFF4C3EE3);
+    final bgColor = const Color(0xFFF9F9F9);
+    final primaryColor = const Color(0xFF0A3D62);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -65,7 +65,7 @@ class MembershipScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFEADBFF), // light purple
+        color: const Color(0xFFE6EBF0), // light purple
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -101,7 +101,7 @@ class MembershipScreen extends StatelessWidget {
         ),
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [Color(0xFF4C3EE3), Color(0xFFD80B57)], // Blue to Magenta
+            colors: [Color(0xFF0A3D62), Color(0xFFD4AF37)], // Blue to Magenta
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ).createShader(bounds),
@@ -248,7 +248,7 @@ class MembershipScreen extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-               const Icon(Icons.star, color: Color(0xFF4C3EE3), size: 24),
+               const Icon(Icons.star, color: Color(0xFF0A3D62), size: 24),
             ]
           ),
           const SizedBox(height: 4),
@@ -294,7 +294,7 @@ class MembershipScreen extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () {},
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF4C3EE3), width: 1.5),
+                side: const BorderSide(color: Color(0xFF0A3D62), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
@@ -302,7 +302,7 @@ class MembershipScreen extends StatelessWidget {
               child: Text(
                 'Get Froofly Plus',
                 style: GoogleFonts.poppins(
-                  color: const Color(0xFF4C3EE3),
+                  color: const Color(0xFF0A3D62),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -442,7 +442,7 @@ class MembershipScreen extends StatelessWidget {
 
   Widget _buildFeatureRow(IconData icon, String boldText, String lightText, bool isPlus) {
     Color iconBg = isPlus ? const Color(0xFFF0F4FF) : const Color(0xFFFFF0F5);
-    Color iconColor = isPlus ? const Color(0xFF4C3EE3) : const Color(0xFFA61E4D);
+    Color iconColor = isPlus ? const Color(0xFF0A3D62) : const Color(0xFFA61E4D);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

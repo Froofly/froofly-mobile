@@ -10,8 +10,8 @@ class CategoryDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFDF7FC);
-    final primaryColor = const Color(0xFF4C3EE3);
+    final bgColor = const Color(0xFFF9F9F9);
+    final primaryColor = const Color(0xFF0A3D62);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -84,9 +84,9 @@ class CategoryDetailsScreen extends StatelessWidget {
   }
 
   List<Widget> _getOffersList() {
-    final cyanColor = const Color(0xFF7DE4FF);
-    final primaryColor = const Color(0xFF4C3EE3);
-    final purplePill = const Color(0xFFEADBFF);
+    final cyanColor = const Color(0xFFD4AF37);
+    final primaryColor = const Color(0xFF0A3D62);
+    final purplePill = const Color(0xFFE6EBF0);
 
     if (categoryName == 'Food') {
       return [
@@ -215,7 +215,7 @@ class CategoryDetailsScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4C3EE3),
+                        backgroundColor: const Color(0xFF0A3D62),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -253,7 +253,7 @@ class CategoryDetailsScreen extends StatelessWidget {
     required double actualPrice,
     required double discountPrice,
   }) {
-    final primaryColor = const Color(0xFF4C3EE3);
+    final primaryColor = const Color(0xFF0A3D62);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -400,7 +400,7 @@ class CategoryDetailsScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFDEDF4),
+                    color: const Color(0xFFF9F9F9),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -435,7 +435,7 @@ class CategoryDetailsScreen extends StatelessWidget {
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: actionColor,
-                foregroundColor: actionColor == const Color(0xFF7DE4FF) ? const Color(0xFF1B6C82) : Colors.white,
+                foregroundColor: actionColor == const Color(0xFFD4AF37) ? const Color(0xFF1B6C82) : Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(22),

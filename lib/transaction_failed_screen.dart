@@ -126,7 +126,7 @@ class _TransactionFailedScreenState extends State<TransactionFailedScreen>
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1A1A2E),
+                          color: const Color(0xFF2D3436),
                         ),
                       ),
 

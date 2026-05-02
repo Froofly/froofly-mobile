@@ -47,8 +47,8 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final bgColor = const Color(0xFFFCF6FB);
-    final primaryColor = const Color(0xFF4C3EE3);
+    final bgColor = const Color(0xFFF9F9F9);
+    final primaryColor = const Color(0xFF0A3D62);
     final textDark = AppTheme.textDark;
 
     return Scaffold(
@@ -131,10 +131,10 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
           Container(
             padding: const EdgeInsets.all(8),
             decoration: const BoxDecoration(
-              color: Color(0xFFEADBFF),
+              color: Color(0xFFE6EBF0),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: Color(0xFF4C3EE3), size: 24),
+            child: Icon(icon, color: Color(0xFF0A3D62), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -163,7 +163,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
           const SizedBox(width: 8),
           CupertinoSwitch(
             value: value,
-            activeColor: const Color(0xFF4C3EE3), // AppTheme.primaryPurple
+            activeColor: const Color(0xFF0A3D62), // AppTheme.primaryPurple
             onChanged: onChanged,
           ),
         ],

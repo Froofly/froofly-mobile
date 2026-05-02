@@ -66,7 +66,7 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
+    final bgColor = const Color(0xFFF9F9F9);
     final textDark = AppTheme.textDark;
 
     return Scaffold(
@@ -75,7 +75,7 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
         backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF4C3EE3)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0A3D62)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -128,7 +128,7 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFF4C3EE3), width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF0A3D62), width: 2),
                     ),
                     contentPadding: const EdgeInsets.all(20),
                   ),
@@ -140,7 +140,7 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitSuggestion,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4C3EE3),
+                    backgroundColor: const Color(0xFF0A3D62),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),

@@ -64,7 +64,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       claimed: '1.2K CLAIMED',
       badgeText: 'TRENDING NOW',
       badgeColor: AppTheme.primaryPurple,
-      discountColor: const Color(0xFF4C3EE3),
+      discountColor: const Color(0xFF0A3D62),
       category: 'Food',
     ),
     _DealData(
@@ -103,8 +103,8 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       timeLeft: '2 DAYS LEFT',
       claimed: '980 CLAIMED',
       badgeText: 'MEMBER EXCLUSIVE',
-      badgeColor: const Color(0xFF4C3EE3),
-      discountColor: const Color(0xFF4C3EE3),
+      badgeColor: const Color(0xFF0A3D62),
+      discountColor: const Color(0xFF0A3D62),
       category: 'Retail',
     ),
     _DealData(
@@ -117,7 +117,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       claimed: '1.5K CLAIMED',
       badgeText: 'TOP PICK',
       badgeColor: const Color(0xFF7A8FF6),
-      discountColor: const Color(0xFF4C3EE3),
+      discountColor: const Color(0xFF0A3D62),
       category: 'Retail',
     ),
     // Health deals
@@ -131,7 +131,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       claimed: '450 CLAIMED',
       badgeText: 'NEW ARRIVAL',
       badgeColor: const Color(0xFF7A8FF6),
-      discountColor: const Color(0xFF4C3EE3),
+      discountColor: const Color(0xFF0A3D62),
       category: 'Health',
     ),
     _DealData(
@@ -171,8 +171,8 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       timeLeft: '8H LEFT',
       claimed: '2.1K CLAIMED',
       badgeText: 'LIMITED TIME',
-      badgeColor: const Color(0xFF4C3EE3),
-      discountColor: const Color(0xFF4C3EE3),
+      badgeColor: const Color(0xFF0A3D62),
+      discountColor: const Color(0xFF0A3D62),
       category: 'Travel',
     ),
     // Entertainment deals
@@ -201,7 +201,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
   Widget build(BuildContext context) {
     final deals = _filteredDeals;
     return Scaffold(
-      backgroundColor: const Color(0xFFFCF6FB),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -245,7 +245,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: const Color(0xFFFCF6FB),
+      backgroundColor: const Color(0xFFF9F9F9),
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Text(

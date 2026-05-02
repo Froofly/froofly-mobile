@@ -25,8 +25,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   late AnimationController _animController;
   late Animation<double> _scaleAnim;
 
-  static const _primaryColor = Color(0xFF4C3EE3);
-  static const _bgColor = Color(0xFFFCF6FB);
+  static const _primaryColor = Color(0xFF0A3D62);
+  static const _bgColor = Color(0xFFF9F9F9);
 
   @override
   void initState() {
@@ -126,7 +126,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                 _sheetOption(
                   icon: Icons.delete_rounded,
                   label: 'Remove Photo',
-                  color: const Color(0xFFD80B57),
+                  color: const Color(0xFFD4AF37),
                   onTap: () {
                     Navigator.pop(ctx);
                     setState(() {
@@ -184,7 +184,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         SnackBar(
           content: Text('Name cannot be empty',
               style: GoogleFonts.poppins()),
-          backgroundColor: const Color(0xFFD80B57),
+          backgroundColor: const Color(0xFFD4AF37),
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -325,7 +325,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF4C3EE3), Color(0xFF7ADCF6)],
+          colors: [Color(0xFF0A3D62), Color(0xFFD4AF37)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

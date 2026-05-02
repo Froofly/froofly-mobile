@@ -9,8 +9,8 @@ class ChallengesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFFCF6FB);
-    final primaryColor = const Color(0xFF4C3EE3);
+    final bgColor = const Color(0xFFF9F9F9);
+    final primaryColor = const Color(0xFF0A3D62);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -34,12 +34,12 @@ class ChallengesScreen extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEADBFF),
+                  color: const Color(0xFFE6EBF0),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.monetization_on, color: Color(0xFF4C3EE3), size: 14),
+                    const Icon(Icons.monetization_on, color: Color(0xFF0A3D62), size: 14),
                     const SizedBox(width: 4),
                     Text(
                       currentBalance.toString().replaceAllMapped(
@@ -47,7 +47,7 @@ class ChallengesScreen extends StatelessWidget {
                         (Match m) => '${m[1]},',
                       ),
                       style: GoogleFonts.poppins(
-                        color: const Color(0xFF1E1C38),
+                        color: const Color(0xFF2D3436),
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -288,7 +288,7 @@ class ChallengesScreen extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF7DE4FF), // Cyan
+                        color: Color(0xFFD4AF37), // Cyan
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.restaurant, color: Color(0xFF1B6C82), size: 20),
@@ -325,7 +325,7 @@ class ChallengesScreen extends StatelessWidget {
                   height: 6,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3EFFF), // light pink/purple tint
+                    color: const Color(0xFFF9F9F9), // light pink/purple tint
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: FractionallySizedBox(
@@ -361,10 +361,10 @@ class ChallengesScreen extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFEADBFF), // light purple
+                        color: Color(0xFFE6EBF0), // light purple
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.medical_services, color: Color(0xFF4C3EE3), size: 20),
+                      child: const Icon(Icons.medical_services, color: Color(0xFF0A3D62), size: 20),
                     ),
                     Text(
                       '+15',
@@ -401,8 +401,8 @@ class ChallengesScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF3EFFF),
-                      foregroundColor: const Color(0xFF1E1C38),
+                      backgroundColor: const Color(0xFFF9F9F9),
+                      foregroundColor: const Color(0xFF2D3436),
                       elevation: 0,
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
@@ -504,7 +504,7 @@ class ChallengesScreen extends StatelessWidget {
       child: Container(
         height: 6,
         decoration: BoxDecoration(
-          color: isCompleted ? const Color(0xFF4C3EE3) : const Color(0xFFF3EFFF),
+          color: isCompleted ? const Color(0xFF0A3D62) : const Color(0xFFF9F9F9),
           borderRadius: BorderRadius.circular(3),
         ),
       ),
@@ -522,7 +522,7 @@ class ChallengesScreen extends StatelessWidget {
             'Restaurant Week',
             'Earn 2x rewards at all partner\nrestaurants this week.',
             'assets/images/coffee.png', // Or another generic background image
-            const Color(0xFFD80B57), // LIVE badge color
+            const Color(0xFFD4AF37), // LIVE badge color
           ),
           const SizedBox(width: 16),
           // A second mock card empty to show horizontal scrollability
@@ -618,13 +618,13 @@ class ChallengesScreen extends StatelessWidget {
                       Text(
                         'Learn More',
                         style: GoogleFonts.poppins(
-                          color: const Color(0xFF4C3EE3),
+                          color: const Color(0xFF0A3D62),
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward, color: Color(0xFF4C3EE3), size: 14),
+                      const Icon(Icons.arrow_forward, color: Color(0xFF0A3D62), size: 14),
                     ],
                   ),
                 ],

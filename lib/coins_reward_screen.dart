@@ -93,7 +93,7 @@ class _CoinsRewardScreenState extends State<CoinsRewardScreen>
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFFCF6FB), Color(0xFFF3E8FF)],
+                colors: [Color(0xFFF9F9F9), Color(0xFFF9F9F9)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),

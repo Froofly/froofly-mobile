@@ -90,10 +90,10 @@ class _MainScreenState extends State<MainScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF4C3EE3).withOpacity(0.1),
+              color: const Color(0xFF0A3D62).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF4C3EE3), size: 32),
+            child: Icon(icon, color: const Color(0xFF0A3D62), size: 32),
           ),
           const SizedBox(height: 8),
           Text(
@@ -272,7 +272,7 @@ class _MainScreenState extends State<MainScreen> {
         return isFirstRouteInCurrentTab;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFFCF6FB),
+        backgroundColor: const Color(0xFFF9F9F9),
         body: Stack(
           children: [
             _buildOffstageNavigator(0, const HomeDealsTab()),
@@ -307,7 +307,7 @@ class _MainScreenState extends State<MainScreen> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4C3EE3).withOpacity(0.4),
+            color: const Color(0xFF0A3D62).withOpacity(0.4),
             blurRadius: 12,
             spreadRadius: 2,
             offset: const Offset(0, 6),
@@ -360,7 +360,7 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
-    final primaryColor = const Color(0xFF4C3EE3);
+    final primaryColor = const Color(0xFF0A3D62);
 
     return Expanded(
       child: InkWell(
