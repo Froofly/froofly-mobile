@@ -16,6 +16,7 @@ import 'account_privacy_screen.dart';
 import 'edit_profile_screen.dart';
 import 'about_us_screen.dart';
 import 'invite_friends_screen.dart';
+import 'orders_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onGoHome;
@@ -35,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   int _totalBills = 0;
   int _achievements = 0;
+  int _totalClaims = 0;
   String _membershipPlan = 'Froofly Free';
 
   List<double> _coinsEarnedList = [0, 0, 0, 0, 0, 0, 0];
@@ -66,6 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     int fetchedTotalBills = 0;
     int fetchedAchievements = 0;
+    int fetchedTotalClaims = 0;
     List<double> fetchedCoinsList = _coinsEarnedList;
     String fetchedPercentage = _percentageChange;
     List<Map<String, dynamic>> fetchedCategories = _uploadCategories;
@@ -78,6 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final data = jsonDecode(statsResponse.body);
           fetchedTotalBills = data['totalBills'] ?? 0;
           fetchedAchievements = data['achievements'] ?? 0;
+          fetchedTotalClaims = data['totalClaims'] ?? 0;
           if (data['analytics'] != null) {
             final a = data['analytics'];
             if (a['coinsEarnedList'] != null) {
@@ -124,6 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _avatarUrl = avatarUrl;
       _totalBills = fetchedTotalBills;
       _achievements = fetchedAchievements;
+      _totalClaims = fetchedTotalClaims;
       _coinsEarnedList = fetchedCoinsList;
       _percentageChange = fetchedPercentage;
       _uploadCategories = fetchedCategories;
@@ -547,7 +552,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(width: 12),
         _buildStatBox(_achievements.toString(), 'ACHIEVEMENTS'),
         const SizedBox(width: 12),
-        _buildStatBox('342', 'FRIENDS'),
+        _buildStatBox(_totalClaims.toString(), 'TOTAL\nCLAIMS'),
       ],
     );
   }
@@ -815,7 +820,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }),
           _buildDivider(),
           _buildSettingsItem(Icons.shopping_bag_outlined, 'Orders', const Color(0xFF0A3D62), false,
-              onTap: () {}),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OrdersScreen()),
+                );
+              }),
           _buildDivider(),
           _buildSettingsItem(Icons.notifications, 'Notification Preferences', const Color(0xFF0A3D62), false,
               onTap: () {

@@ -206,7 +206,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       body: Column(
         children: [
           _buildCategoryList(),
-          Expanded(
+                  Expanded(
             child: deals.isEmpty
                 ? Center(
                     child: Text(
@@ -217,9 +217,8 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                       ),
                     ),
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
-                        .copyWith(bottom: 100),
+                : PageView.builder(
+                    scrollDirection: Axis.vertical,
                     itemCount: deals.length,
                     itemBuilder: (context, index) {
                       final d = deals[index];

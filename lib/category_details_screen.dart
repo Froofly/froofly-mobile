@@ -3,10 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'theme.dart';
 
-class CategoryDetailsScreen extends StatelessWidget {
+class CategoryDetailsScreen extends StatefulWidget {
   final String categoryName;
+  final List<String> subcategories;
 
-  const CategoryDetailsScreen({super.key, required this.categoryName});
+  const CategoryDetailsScreen({super.key, required this.categoryName, required this.subcategories});
+
+  @override
+  State<CategoryDetailsScreen> createState() => _CategoryDetailsScreenState();
+}
+
+class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
+  String _selectedSubcategory = 'All';
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +31,7 @@ class CategoryDetailsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '$categoryName Offers',
+          '${widget.categoryName} Offers',
           style: GoogleFonts.poppins(
             color: AppTheme.textDark,
             fontWeight: FontWeight.bold,
@@ -37,90 +45,218 @@ class CategoryDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10).copyWith(bottom: 100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Top Rated ${categoryName}s',
-              style: GoogleFonts.poppins(
-                color: AppTheme.textDark,
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
+      body: Column(
+        children: [
+          // Subcategories Filter
+          if (widget.subcategories.isNotEmpty)
+            SizedBox(
+              height: 50,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: widget.subcategories.length,
+                itemBuilder: (context, index) {
+                  final sub = widget.subcategories[index];
+                  final isSelected = sub == _selectedSubcategory;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedSubcategory = sub;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isSelected ? primaryColor : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: isSelected ? primaryColor : AppTheme.textGrey.withOpacity(0.3)),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        sub,
+                        style: GoogleFonts.poppins(
+                          color: isSelected ? Colors.white : AppTheme.textDark,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 16),
-            _buildHeroCard(),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Available Offers',
-                  style: GoogleFonts.poppins(
-                    color: AppTheme.textDark,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+          
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10).copyWith(bottom: 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_selectedSubcategory == 'All') ...[
+                    Text(
+                      'Top Rated in ${widget.categoryName}',
+                      style: GoogleFonts.poppins(
+                        color: AppTheme.textDark,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildHeroCard(),
+                    const SizedBox(height: 24),
+                  ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _selectedSubcategory == 'All' ? 'Available Offers' : '$_selectedSubcategory Offers',
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.textDark,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '3 REWARDS NEARBY',
+                        style: GoogleFonts.poppins(
+                          color: primaryColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Text(
-                  '3 REWARDS NEARBY',
-                  style: GoogleFonts.poppins(
-                    color: primaryColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  ..._getOffersList(),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            ..._getOffersList(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   List<Widget> _getOffersList() {
-    final cyanColor = const Color(0xFFD4AF37);
-    final primaryColor = const Color(0xFF0A3D62);
-    final purplePill = const Color(0xFFE6EBF0);
-
-    if (categoryName == 'Food') {
+    if (widget.categoryName.contains('Food')) {
       return [
-        _buildOfferCard(title: 'Burger King', subtitle: 'BOGO Premium Meal', icon: Icons.lunch_dining, iconBgColor: purplePill, coinsRequired: 150, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '0.8 km', actualPrice: 499, discountPrice: 349),
+        _buildDealCard(
+          imagePath: 'assets/images/burger.png',
+          title: 'Burger King',
+          subtitle: 'BOGO Premium Meal',
+          badgeText: 'FLASH DEAL',
+          badgeColor: const Color(0xFF008080),
+          iconData: Icons.lunch_dining,
+          footerText: '0.8 KM AWAY',
+          coinsRequired: 150,
+          isUnlocked: false,
+        ),
         const SizedBox(height: 16),
-        _buildOfferCard(title: 'Starbucks', subtitle: 'Free Pastry', icon: Icons.coffee, iconBgColor: purplePill, coinsRequired: 0, isUnlocked: true, actionText: 'Use Now', actionColor: primaryColor, distance: '1.2 km', actualPrice: 350, discountPrice: 0),
+        _buildDealCard(
+          imagePath: 'assets/images/coffee.png',
+          title: 'Starbucks',
+          subtitle: 'Free Pastry',
+          badgeText: 'UNLOCKED',
+          badgeColor: const Color(0xFF0A3D62),
+          iconData: Icons.coffee,
+          footerText: '1.2 KM AWAY',
+          coinsRequired: 0,
+          isUnlocked: true,
+        ),
         const SizedBox(height: 16),
-        _buildOfferCard(title: 'Pizza Hut', subtitle: '30% Off Large Pizza', icon: Icons.local_pizza, iconBgColor: purplePill, coinsRequired: 120, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '2.5 km', actualPrice: 599, discountPrice: 419),
+        _buildDealCard(
+          imagePath: 'assets/images/burger.png',
+          title: 'Pizza Hut',
+          subtitle: '30% Off Large Pizza',
+          badgeText: '',
+          badgeColor: Colors.transparent,
+          iconData: Icons.local_pizza,
+          footerText: '2.5 KM AWAY',
+          coinsRequired: 120,
+          isUnlocked: false,
+        ),
       ];
-    } else if (categoryName == 'Retail') {
+    } else if (widget.categoryName.contains('Retail')) {
       return [
-        _buildOfferCard(title: 'Nike Store', subtitle: '\$20 Off Shoes', icon: Icons.snowshoeing, iconBgColor: purplePill, coinsRequired: 300, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '3.1 km', actualPrice: 2999, discountPrice: 2499),
+        _buildDealCard(
+          imagePath: 'assets/images/wellness.png',
+          title: 'Nike Store',
+          subtitle: '\$20 Off Shoes',
+          badgeText: 'HOT DEAL',
+          badgeColor: const Color(0xFFD4AF37),
+          iconData: Icons.snowshoeing,
+          footerText: '3.1 KM AWAY',
+          coinsRequired: 300,
+          isUnlocked: false,
+        ),
         const SizedBox(height: 16),
-        _buildOfferCard(title: 'Target', subtitle: '15% Entire Purchase', icon: Icons.local_mall, iconBgColor: purplePill, coinsRequired: 0, isUnlocked: true, actionText: 'Use Now', actionColor: primaryColor, distance: '1.0 km', actualPrice: 1500, discountPrice: 1275),
-        const SizedBox(height: 16),
-        _buildOfferCard(title: 'Best Buy', subtitle: '10% Off Electronics', icon: Icons.computer, iconBgColor: purplePill, coinsRequired: 500, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '4.2 km', actualPrice: 5000, discountPrice: 4500),
+        _buildDealCard(
+          imagePath: 'assets/images/wellness.png',
+          title: 'Target',
+          subtitle: '15% Entire Purchase',
+          badgeText: 'UNLOCKED',
+          badgeColor: const Color(0xFF0A3D62),
+          iconData: Icons.local_mall,
+          footerText: '1.0 KM AWAY',
+          coinsRequired: 0,
+          isUnlocked: true,
+        ),
       ];
-    } else if (categoryName == 'Fitness') {
+    } else if (widget.categoryName.contains('Wellness') || widget.categoryName.contains('Fitness')) {
       return [
-        _buildOfferCard(title: 'Anytime Fitness', subtitle: '1 Free Month', icon: Icons.fitness_center, iconBgColor: purplePill, coinsRequired: 400, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '1.5 km', actualPrice: 1999, discountPrice: 0),
+        _buildDealCard(
+          imagePath: 'assets/images/wellness.png',
+          title: 'Anytime Fitness',
+          subtitle: '1 Free Month Trial',
+          badgeText: 'EXCLUSIVE DROP',
+          badgeColor: AppTheme.magenta,
+          iconData: Icons.fitness_center,
+          footerText: '1.5 KM AWAY',
+          coinsRequired: 400,
+          isUnlocked: false,
+        ),
         const SizedBox(height: 16),
-        _buildOfferCard(title: 'GNC', subtitle: '25% Off Protein', icon: Icons.medication, iconBgColor: purplePill, coinsRequired: 0, isUnlocked: true, actionText: 'Use Now', actionColor: primaryColor, distance: '2.3 km', actualPrice: 1200, discountPrice: 900),
-        const SizedBox(height: 16),
-        _buildOfferCard(title: 'Yoga Studio', subtitle: '1 Free Class', icon: Icons.self_improvement, iconBgColor: purplePill, coinsRequired: 100, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '0.6 km', actualPrice: 500, discountPrice: 0),
+        _buildDealCard(
+          imagePath: 'assets/images/wellness.png',
+          title: 'Yoga Studio',
+          subtitle: '1 Free Class',
+          badgeText: '',
+          badgeColor: Colors.transparent,
+          iconData: Icons.self_improvement,
+          footerText: '0.6 KM AWAY',
+          coinsRequired: 100,
+          isUnlocked: false,
+        ),
       ];
     }
 
-    // Default (Salon and others)
+    // Default 
     return [
-      _buildOfferCard(title: 'Aura Salon', subtitle: '15% Off Haircut', icon: Icons.content_cut, iconBgColor: purplePill, coinsRequired: 100, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '0.5 km', actualPrice: 800, discountPrice: 680),
+      _buildDealCard(
+        imagePath: 'assets/images/wellness.png',
+        title: 'Aura Service',
+        subtitle: '15% Off Total Bill',
+        badgeText: 'LIMITED TIME',
+        badgeColor: const Color(0xFF0A3D62),
+        iconData: Icons.star,
+        footerText: '0.5 KM AWAY',
+        coinsRequired: 100,
+        isUnlocked: false,
+      ),
       const SizedBox(height: 16),
-      _buildOfferCard(title: 'The Barber Shop', subtitle: 'Free Beard Trim', icon: Icons.face, iconBgColor: purplePill, coinsRequired: 0, isUnlocked: true, actionText: 'Use Now', actionColor: primaryColor, distance: '1.1 km', actualPrice: 300, discountPrice: 0),
-      const SizedBox(height: 16),
-      _buildOfferCard(title: 'Luxe Nails', subtitle: '10% Off Manicure', icon: Icons.spa, iconBgColor: purplePill, coinsRequired: 80, isUnlocked: false, actionText: 'Unlock', actionColor: cyanColor, distance: '2.0 km', actualPrice: 600, discountPrice: 540),
+      _buildDealCard(
+        imagePath: 'assets/images/wellness.png',
+        title: 'Premium Studio',
+        subtitle: 'Free Consultation',
+        badgeText: 'UNLOCKED',
+        badgeColor: const Color(0xFF0A3D62),
+        iconData: Icons.verified,
+        footerText: '1.1 KM AWAY',
+        coinsRequired: 0,
+        isUnlocked: true,
+      ),
     ];
   }
 
@@ -240,29 +376,25 @@ class CategoryDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOfferCard({
+  Widget _buildDealCard({
+    required String imagePath,
     required String title,
     required String subtitle,
-    required IconData icon,
-    required Color iconBgColor,
+    required String badgeText,
+    required Color badgeColor,
+    required IconData iconData,
+    required String footerText,
     required int coinsRequired,
     required bool isUnlocked,
-    required String actionText,
-    required Color actionColor,
-    required String distance,
-    required double actualPrice,
-    required double discountPrice,
   }) {
     final primaryColor = const Color(0xFF0A3D62);
-
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             spreadRadius: 2,
             offset: const Offset(0, 4),
@@ -271,153 +403,80 @@ class CategoryDetailsScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  shape: BoxShape.circle,
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            child: Stack(
+              children: [
+                Image.asset(
+                  imagePath,
+                  height: 140,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 140,
+                      width: double.infinity,
+                      color: Colors.grey[300],
+                      child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+                    );
+                  },
                 ),
-                child: Center(
-                  child: Icon(icon, color: primaryColor, size: 28),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.poppins(
-                        color: AppTheme.textDark,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.poppins(
-                        color: primaryColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Distance row
-                    Row(
-                      children: [
-                        Icon(Icons.location_on, color: AppTheme.textGrey, size: 13),
-                        const SizedBox(width: 3),
-                        Text(
-                          distance,
-                          style: GoogleFonts.poppins(
-                            color: AppTheme.textGrey,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                Container(
+                  height: 140,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.7),
+                        Colors.transparent,
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Price and coins row
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAF5FF),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                // Price section
-                if (discountPrice > 0) ...[
-                  Text(
-                    '₹${actualPrice.toInt()}',
-                    style: GoogleFonts.poppins(
-                      color: AppTheme.textGrey,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: AppTheme.textGrey,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '₹${discountPrice.toInt()}',
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF2E9C68),
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE5F8ED),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${((1 - discountPrice / actualPrice) * 100).toInt()}% OFF',
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF2E9C68),
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
+                if (badgeText.isNotEmpty)
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: badgeColor,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                  ),
-                ] else if (actualPrice > 0) ...[
-                  Text(
-                    '₹${actualPrice.toInt()}',
-                    style: GoogleFonts.poppins(
-                      color: AppTheme.textGrey,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: AppTheme.textGrey,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'FREE',
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF2E9C68),
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-                const Spacer(),
-                // Coins section
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9F9F9),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isUnlocked ? Icons.check_circle : Icons.monetization_on,
-                        color: const Color(0xFFA61E4D),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        isUnlocked ? 'Unlocked' : '$coinsRequired Coins',
+                      child: Text(
+                        badgeText,
                         style: GoogleFonts.poppins(
-                          color: const Color(0xFF671B36),
-                          fontSize: 11,
+                          color: Colors.white,
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -426,28 +485,83 @@ class CategoryDetailsScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          // Action button
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: actionColor,
-                foregroundColor: actionColor == const Color(0xFFD4AF37) ? const Color(0xFF1B6C82) : Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(22),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9F9F9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(iconData, color: primaryColor, size: 18),
                 ),
-              ),
-              child: Text(
-                actionText,
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    footerText,
+                    style: GoogleFonts.poppins(
+                      color: AppTheme.textGrey,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
-              ),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isUnlocked ? primaryColor : const Color(0xFFFF4757),
+                    foregroundColor: Colors.white,
+                    elevation: isUnlocked ? 0 : 4,
+                    shadowColor: const Color(0xFFFF4757).withOpacity(0.4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isUnlocked) ...[
+                        const Icon(Icons.lock_outline, size: 16),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        isUnlocked ? 'Claim' : 'Unlock',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      if (!isUnlocked) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                '$coinsRequired',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              const Icon(Icons.monetization_on, size: 12, color: Color(0xFFFFD700)),
+                            ],
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
