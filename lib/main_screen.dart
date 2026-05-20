@@ -154,8 +154,21 @@ class _MainScreenState extends State<MainScreen> {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      // 422 = transaction not completed keyword not found
-      if (response.statusCode == 422) {
+      // 422 = transaction not completed keyword not found, 409 = duplicate transaction
+      if (response.statusCode == 422 || response.statusCode == 409) {
+        String title = 'Transaction Not Completed';
+        String message = 'We could not verify a successful payment in your screenshot.\n\nPlease upload a screenshot that shows:\n"Transaction Successful", "Paid to" or "Payment Completed".';
+        
+        try {
+          final errorBody = jsonDecode(response.body);
+          if (errorBody['message'] != null) {
+            message = errorBody['message'];
+          }
+          if (response.statusCode == 409 || errorBody['errorType'] == 'DUPLICATE_TRANSACTION') {
+            title = 'Duplicate Transaction';
+          }
+        } catch (_) {}
+
         if (mounted) {
           Navigator.pop(context); // pop loading dialog
           Navigator.push(
@@ -163,7 +176,10 @@ class _MainScreenState extends State<MainScreen> {
             PageRouteBuilder(
               opaque: false,
               barrierColor: Colors.black54,
-              pageBuilder: (_, __, ___) => const TransactionFailedScreen(),
+              pageBuilder: (_, __, ___) => TransactionFailedScreen(
+                title: title,
+                message: message,
+              ),
               transitionsBuilder: (_, animation, __, child) {
                 return FadeTransition(opacity: animation, child: child);
               },

@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class TransactionFailedScreen extends StatefulWidget {
-  const TransactionFailedScreen({super.key});
+  final String title;
+  final String message;
+
+  const TransactionFailedScreen({
+    super.key,
+    this.title = 'Transaction Not Completed',
+    this.message = 'We could not verify a successful payment in your screenshot.\n\nPlease upload a screenshot that shows:\n"Transaction Successful", "Paid to" or "Payment Completed".',
+  });
 
   @override
   State<TransactionFailedScreen> createState() =>
@@ -121,7 +128,7 @@ class _TransactionFailedScreenState extends State<TransactionFailedScreen>
                       const SizedBox(height: 24),
 
                       Text(
-                        'Transaction Not Completed',
+                        widget.title,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 20,
@@ -133,7 +140,7 @@ class _TransactionFailedScreenState extends State<TransactionFailedScreen>
                       const SizedBox(height: 12),
 
                       Text(
-                        'We could not verify a successful payment in your screenshot.\n\nPlease upload a screenshot that shows:\n"Transaction Successful", "Paid to" or "Payment Completed".',
+                        widget.message,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
