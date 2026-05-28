@@ -131,7 +131,13 @@ class _MainScreenState extends State<MainScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const ScreenshotProcessingDialog(),
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => const Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: EdgeInsets.zero,
+        child: ScreenshotProcessingDialog(),
+      ),
     );
 
     try {
@@ -487,9 +493,9 @@ class _ScreenshotProcessingDialogState extends State<ScreenshotProcessingDialog>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: BackdropFilter(
+    return Material(
+      type: MaterialType.transparency,
+      child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
           color: Colors.black.withOpacity(0.4),
