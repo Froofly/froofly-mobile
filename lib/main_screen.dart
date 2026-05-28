@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
+import 'dart:ui';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,7 +18,6 @@ import 'theme.dart';
 import 'coins_reward_screen.dart';
 import 'transaction_failed_screen.dart';
 import 'balance_manager.dart';
-import 'dart:math';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -129,7 +131,7 @@ class _MainScreenState extends State<MainScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const ScreenshotProcessingDialog(),
     );
 
     try {
@@ -415,6 +417,303 @@ class _MainScreenState extends State<MainScreen> {
             else
               const SizedBox(height: 8),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class ScreenshotProcessingDialog extends StatefulWidget {
+  const ScreenshotProcessingDialog({super.key});
+
+  @override
+  State<ScreenshotProcessingDialog> createState() => _ScreenshotProcessingDialogState();
+}
+
+class _ScreenshotProcessingDialogState extends State<ScreenshotProcessingDialog> with TickerProviderStateMixin {
+  late AnimationController _coinRotationController;
+  late AnimationController _laserScanController;
+  late Animation<double> _laserPosition;
+  
+  int _statusIndex = 0;
+  Timer? _statusTimer;
+  
+  final List<String> _statusMessages = [
+    'Uploading screenshot securely...',
+    'Extracting transaction details...',
+    'Verifying merchant & signature...',
+    'Running fraud validation checks...',
+    'Generating your reward coins...',
+    'Almost done! Preparing your wallet...',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Coin rotation animation controller (spins continuously)
+    _coinRotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat();
+    
+    // Laser scan animation controller (moves up and down)
+    _laserScanController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+    
+    _laserPosition = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _laserScanController, curve: Curves.easeInOut),
+    );
+    
+    // Cycle status messages
+    _statusTimer = Timer.periodic(const Duration(milliseconds: 1600), (timer) {
+      if (mounted) {
+        setState(() {
+          _statusIndex = (_statusIndex + 1) % _statusMessages.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _coinRotationController.dispose();
+    _laserScanController.dispose();
+    _statusTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          color: Colors.black.withOpacity(0.4),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 320),
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.classicNavy.withOpacity(0.95),
+                  const Color(0xFF041E30).withOpacity(0.95),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: AppTheme.champaignGold.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.classicNavy.withOpacity(0.4),
+                  blurRadius: 25,
+                  spreadRadius: 5,
+                ),
+                BoxShadow(
+                  color: AppTheme.champaignGold.withOpacity(0.1),
+                  blurRadius: 15,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Animated Scanning Mockup
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Outer decorative portal
+                    Container(
+                      width: 160,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.08),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    
+                    // Middle scanning card frame (resembles receipt/screen)
+                    Container(
+                      width: 90,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.15),
+                          width: 1.5,
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(4, (index) {
+                          double width = index == 0 ? 30.0 : (index == 3 ? 20.0 : 50.0);
+                          return Container(
+                            height: 6,
+                            width: width,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                    
+                    // Moving Laser Line
+                    Positioned.fill(
+                      child: AnimatedBuilder(
+                        animation: _laserPosition,
+                        builder: (context, child) {
+                          // Define laser bounds based on middle scanning card height
+                          // Middle card is 120 high, centered in 160 height Stack
+                          // Offset starts at (160 - 120) / 2 = 20, ends at 140
+                          double topOffset = 20.0 + (_laserPosition.value * 120.0);
+                          return Stack(
+                            children: [
+                              Positioned(
+                                top: topOffset,
+                                left: 35, // Centered horizontally relative to the 90 wide card (160-90)/2 = 35
+                                child: Container(
+                                  width: 90,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.champaignGold,
+                                    borderRadius: BorderRadius.circular(2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.champaignGold.withOpacity(0.8),
+                                        blurRadius: 10,
+                                        spreadRadius: 3,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    
+                    // Rotating & Pulsing Coin hovering in front
+                    Positioned(
+                      bottom: 0,
+                      right: 15,
+                      child: AnimatedBuilder(
+                        animation: _coinRotationController,
+                        builder: (context, child) {
+                          double scale = 1.0 + (sin(_coinRotationController.value * 2 * pi) * 0.12);
+                          double rotation = _coinRotationController.value * 2 * pi;
+                          return Transform(
+                            transform: Matrix4.identity()
+                              ..setEntry(3, 2, 0.001) // perspective
+                              ..rotateY(rotation)
+                              ..scale(scale),
+                            alignment: Alignment.center,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.black45,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.monetization_on,
+                                color: AppTheme.champaignGold,
+                                size: 40,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 28),
+                
+                // Status caption
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.0, 0.15),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Text(
+                    _statusMessages[_statusIndex],
+                    key: ValueKey<int>(_statusIndex),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      height: 1.4,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Bottom premium loading indicator dots/progress
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(4, (index) {
+                    return TweenAnimationBuilder<double>(
+                      duration: Duration(milliseconds: 400 + (index * 150)),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      builder: (context, value, child) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _statusIndex % 4 == index
+                                ? AppTheme.champaignGold
+                                : Colors.white.withOpacity(0.15),
+                            boxShadow: _statusIndex % 4 == index
+                                ? [
+                                    BoxShadow(
+                                      color: AppTheme.champaignGold.withOpacity(0.6),
+                                      blurRadius: 6,
+                                      spreadRadius: 1,
+                                    )
+                                  ]
+                                : null,
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
