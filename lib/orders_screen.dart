@@ -242,7 +242,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
                         height: MediaQuery.of(context).size.height * 0.7,
-                        alignment: Center(),
+                        alignment: Alignment.center,
                         padding: const EdgeInsets.all(40),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
