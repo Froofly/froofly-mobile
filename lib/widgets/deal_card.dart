@@ -13,6 +13,7 @@ class DealCard extends StatelessWidget {
   final String badgeText;
   final Color badgeColor;
   final Color discountColor;
+  final VoidCallback? onUnlockPressed;
 
   const DealCard({
     super.key,
@@ -26,6 +27,7 @@ class DealCard extends StatelessWidget {
     required this.badgeText,
     required this.badgeColor,
     required this.discountColor,
+    this.onUnlockPressed,
   });
 
   @override
@@ -202,13 +204,16 @@ class DealCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         // UNLOCK Button
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: AppTheme.ivoryWhite,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppTheme.classicNavy, width: 1.5),
-                          ),
+                        InkWell(
+                          onTap: onUnlockPressed,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppTheme.ivoryWhite,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppTheme.classicNavy, width: 1.5),
+                            ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -236,7 +241,8 @@ class DealCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                      ],
+                      ),
+                    ],
                     ),
                     
                     const SizedBox(height: 8),

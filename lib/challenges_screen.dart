@@ -5,7 +5,12 @@ import 'theme.dart';
 import 'balance_manager.dart';
 
 class ChallengesScreen extends StatelessWidget {
-  const ChallengesScreen({super.key});
+  final VoidCallback? onScanPressed;
+
+  const ChallengesScreen({
+    super.key,
+    this.onScanPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +223,7 @@ class ChallengesScreen extends StatelessWidget {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: onScanPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: primaryColor,
@@ -399,7 +404,7 @@ class ChallengesScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 30,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: onScanPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF9F9F9),
                       foregroundColor: const Color(0xFF2D3436),

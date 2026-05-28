@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'theme.dart';
 import 'category_details_screen.dart';
+import 'balance_manager.dart';
 
 class RewardsMarketplace extends StatefulWidget {
   const RewardsMarketplace({super.key});
@@ -105,33 +108,656 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
   bool _showAllCategories = false;
   List<Map<String, dynamic>>? _fetchedOffers;
   bool _isLoadingOffers = true;
+  Timer? _refreshTimer;
+
+  double _latitude = 12.9716; 
+  double _longitude = 77.5946;
+  String _locationName = 'Bengaluru (MG Road)';
+
+  String? _userId;
+  Set<String> _claimedOfferIds = {};
+
+  final List<Map<String, dynamic>> _mockLocations = [
+    {
+      'name': 'Bengaluru (MG Road)',
+      'lat': 12.9716,
+      'lng': 77.5946,
+    },
+    {
+      'name': 'Mumbai (Marine Drive)',
+      'lat': 19.0760,
+      'lng': 72.8777,
+    },
+    {
+      'name': 'Delhi (Connaught Place)',
+      'lat': 28.6139,
+      'lng': 77.2090,
+    },
+    {
+      'name': 'Dominate Proximity (0.2 km)',
+      'lat': 12.9725,
+      'lng': 77.5955,
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
-    _fetchOffers();
+    _loadUserAndData();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 15), (timer) {
+      _fetchOffers();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadUserAndData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getString('userId');
+    final coins = prefs.getInt('currentBalance') ?? 0;
+    
+    if (coins > 0) {
+      BalanceManager.instance.updateBalance(coins);
+    }
+
+    await _fetchClaims();
+    await _fetchOffers();
+  }
+
+  Future<void> _fetchClaims() async {
+    if (_userId == null) return;
+    try {
+      final response = await http.get(Uri.parse('https://froofly-backend.onrender.com/offer/claims/$_userId'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final Set<String> claimedIds = {};
+        for (var c in data) {
+          if (c['offerId'] != null) {
+            claimedIds.add(c['offerId'].toString());
+          }
+        }
+        setState(() {
+          _claimedOfferIds = claimedIds;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching claims: $e');
+    }
   }
 
   Future<void> _fetchOffers() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingOffers = true;
+    });
+
     try {
-      final response = await http.get(Uri.parse('https://froofly-backend.onrender.com/offer/explore'));
+      final url = 'https://froofly-backend.onrender.com/offer/explore?lat=$_latitude&lng=$_longitude';
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          _fetchedOffers = data.cast<Map<String, dynamic>>();
-          _isLoadingOffers = false;
-        });
+        if (mounted) {
+          setState(() {
+            _fetchedOffers = data.cast<Map<String, dynamic>>();
+            _isLoadingOffers = false;
+          });
+        }
         return;
       }
     } catch (e) {
       debugPrint('Error fetching offers: $e');
     }
-    
-    // Fallback or failed state
+
     if (mounted) {
       setState(() {
         _isLoadingOffers = false;
       });
+    }
+  }
+
+  void _showLocationSwitcher() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Simulate Travel / Change Location',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textDark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Recalculates distances and priority boosts in real-time based on customer travels.',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: AppTheme.textGrey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ..._mockLocations.map((loc) {
+                final bool isSelected = _locationName == loc['name'];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? primaryColor.withOpacity(0.05) : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected ? primaryColor : Colors.transparent,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.location_on,
+                      color: isSelected ? primaryColor : AppTheme.textGrey,
+                    ),
+                    title: Text(
+                      loc['name'],
+                      style: GoogleFonts.poppins(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected ? primaryColor : AppTheme.textDark,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Lat: ${loc['lat']}, Lng: ${loc['lng']}',
+                      style: GoogleFonts.poppins(fontSize: 10, color: AppTheme.textGrey),
+                    ),
+                    trailing: isSelected
+                        ? Icon(Icons.check_circle, color: primaryColor)
+                        : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        _latitude = loc['lat'];
+                        _longitude = loc['lng'];
+                        _locationName = loc['name'];
+                      });
+                      _fetchOffers();
+                    },
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showOfferDetails(Map<String, dynamic> offer) {
+    final merchant = offer['merchant'] ?? {};
+    final String shopLogo = merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
+        ? merchant['shopLogo']
+        : 'assets/images/wellness.png';
+    final String merchantName = merchant['businessName'] ?? offer['title'] ?? 'Merchant';
+    final String offerTitle = offer['title'] ?? 'Special Deal';
+    final String description = offer['description'] ?? 'No description provided.';
+    final String offerType = offer['offerType'] ?? 'EXCLUSIVE';
+    final int coins = offer['coinsRequired'] ?? 100;
+    final List<dynamic> conditions = offer['conditions'] ?? [];
+    
+    final String road = merchant['addressRoad'] ?? '';
+    final String street = merchant['addressStreet'] ?? '';
+    final String fullAddress = [road, street].where((s) => s.isNotEmpty).join(', ');
+    final String addressText = fullAddress.isNotEmpty ? fullAddress : 'Nearby store location';
+
+    final bool isClaimed = _claimedOfferIds.contains(offer['id']);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                    child: shopLogo.startsWith('http')
+                        ? Image.network(
+                            shopLogo,
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholderCover(),
+                          )
+                        : Image.asset(
+                            shopLogo,
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholderCover(),
+                          ),
+                  ),
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black45,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              merchantName.toUpperCase(),
+                              style: GoogleFonts.poppins(
+                                color: primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.verified, color: Colors.blue, size: 16),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        offerTitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.magenta.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'OFFER TYPE: $offerType',
+                          style: GoogleFonts.poppins(
+                            color: AppTheme.magenta,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Description',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        description,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: AppTheme.textGrey,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Rules & Conditions',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (conditions.isEmpty)
+                        Text(
+                          '• Valid on all days.\n• Present QR code at the counter before billing.',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: AppTheme.textGrey,
+                            height: 1.6,
+                          ),
+                        )
+                      else
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: conditions.map((rule) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  Expanded(
+                                    child: Text(
+                                      rule.toString(),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        color: AppTheme.textGrey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Direction',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.map_outlined, color: primaryColor, size: 20),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Store Address',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textDark,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    addressText,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: AppTheme.textGrey,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: isClaimed
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          _unlockOffer(offer);
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isClaimed ? const Color(0xFF2E9C68) : primaryColor,
+                    disabledBackgroundColor: const Color(0xFF2E9C68),
+                    foregroundColor: Colors.white,
+                    disabledForegroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(isClaimed ? Icons.check_circle_outline : Icons.lock_open, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        isClaimed ? 'UNLOCKED' : 'UNLOCK OFFER WITH $coins COINS',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPlaceholderCover() {
+    return Container(
+      height: 220,
+      color: Colors.grey.shade300,
+      child: const Center(
+        child: Icon(Icons.image, size: 50, color: Colors.grey),
+      ),
+    );
+  }
+
+  Future<void> _unlockOffer(Map<String, dynamic> offer) async {
+    if (_userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to unlock offers!')),
+      );
+      return;
+    }
+
+    final coins = offer['coinsRequired'] ?? 100;
+    final currentBal = BalanceManager.instance.balance.value;
+    if (currentBal < coins) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text('Insufficient Coins', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: Text(
+            'You need $coins coins to unlock this deal. You currently have $currentBal coins.',
+            style: GoogleFonts.poppins(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Close', style: GoogleFonts.poppins(color: AppTheme.textGrey)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Unlock Offer?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: primaryColor)),
+        content: Text(
+          'Do you want to unlock "${offer['title']}" for $coins coins?',
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: GoogleFonts.poppins(color: AppTheme.textGrey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text('Unlock', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://froofly-backend.onrender.com/offer/claim/${offer['id']}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'userId': _userId}),
+      );
+
+      Navigator.pop(context); 
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        final int updatedBalance = data['currentBalance'] ?? (currentBal - coins);
+
+        await BalanceManager.instance.updateBalance(updatedBalance);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('currentBalance', updatedBalance);
+
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE5F8ED),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.celebration, color: Color(0xFF2E9C68), size: 48),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Congratulations!',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'You have successfully unlocked "${offer['title']}"!\n\nThis coupon code is now active and stored under Profile -> Orders.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E9C68),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(
+                        'Awesome!',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        await _fetchClaims();
+        _fetchOffers();
+      } else {
+        final err = json.decode(response.body);
+        throw err['message'] ?? 'Claim failed';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to unlock offer: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 
@@ -186,26 +812,51 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _isLoadingOffers
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40.0),
+                  child: CircularProgressIndicator(),
+                ),
+              )
             : _fetchedOffers != null && _fetchedOffers!.isNotEmpty
               ? Column(
                   children: _fetchedOffers!.map((offer) {
                     final merchant = offer['merchant'] ?? {};
+                    final String shopLogo = merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
+                        ? merchant['shopLogo']
+                        : 'assets/images/wellness.png';
+                    
+                    final String merchantName = merchant['businessName'] ?? offer['title'] ?? 'Merchant';
+                    final String offerTitle = offer['title'] ?? 'Special Deal';
+                    final int coins = offer['coinsRequired'] ?? 100;
+                    final String distance = offer['distance'] ?? 'Nearby';
+                    
+                    String expiryText = 'Expires in 3 days';
+                    if (offer['validityEnd'] != null) {
+                      try {
+                        final end = DateTime.parse(offer['validityEnd']);
+                        final diff = end.difference(DateTime.now()).inDays;
+                        expiryText = diff > 0 ? 'Expires in $diff days' : 'Expires today';
+                      } catch (_) {}
+                    }
+                    
+                    final bool isClaimed = _claimedOfferIds.contains(offer['id']);
+                    
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: _buildDealCard(
-                        imagePath: merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
-                            ? merchant['shopLogo'] 
-                            : 'assets/images/wellness.png',
-                        title: merchant['businessName'] ?? offer['title'] ?? 'Store',
-                        subtitle: offer['title'] ?? 'Special Offer',
+                        offer: offer,
+                        imagePath: shopLogo,
+                        title: merchantName,
+                        subtitle: offerTitle,
                         badgeText: offer['offerType'] == 'PERCENTAGE' ? '${offer['maxDiscount']}% OFF' : 'EXCLUSIVE',
                         badgeColor: AppTheme.magenta,
                         iconData: Icons.local_offer,
-                        footerText: offer['distance'] ?? 'Nearby',
-                        coinsRequired: offer['coinsRequired'] ?? 100,
-                        isUnlocked: false,
-                        isNetworkImage: merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http'),
+                        footerText: distance,
+                        expiryText: expiryText,
+                        coinsRequired: coins,
+                        isUnlocked: isClaimed,
+                        isNetworkImage: shopLogo.startsWith('http'),
                       ),
                     );
                   }).toList(),
@@ -213,39 +864,31 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
               : Column(
                   children: [
                     _buildDealCard(
+                      offer: const {},
                       imagePath: 'assets/images/wellness.png',
                       title: 'Glow Spa',
                       subtitle: '20% Off Massage',
                       badgeText: 'EXCLUSIVE DROP',
                       badgeColor: AppTheme.magenta,
                       iconData: Icons.spa,
-                      footerText: 'EXPIRES IN 3 DAYS',
+                      footerText: '0.8 km away',
+                      expiryText: 'Expires in 3 days',
                       coinsRequired: 200,
                       isUnlocked: false,
                     ),
                     const SizedBox(height: 16),
                     _buildDealCard(
+                      offer: const {},
                       imagePath: 'assets/images/burger.png',
                       title: 'Burger King',
                       subtitle: 'BOGO Whopper',
                       badgeText: 'FLASH DEAL',
                       badgeColor: const Color(0xFF008080),
                       iconData: Icons.lunch_dining,
-                      footerText: 'REDEEM NEARBY',
+                      footerText: '1.2 km away',
+                      expiryText: 'Expires in 2 days',
                       coinsRequired: 100,
                       isUnlocked: false,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildDealCard(
-                      imagePath: 'assets/images/coffee.png',
-                      title: 'CVS Pharmacy',
-                      subtitle: '\$5 Off \$25',
-                      badgeText: '',
-                      badgeColor: Colors.transparent,
-                      iconData: Icons.medical_services,
-                      footerText: 'VALID TILL SUNDAY',
-                      coinsRequired: 50,
-                      isUnlocked: true,
                     ),
                   ],
                 ),
@@ -255,6 +898,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
   }
 
   Widget _buildDealCard({
+    required Map<String, dynamic> offer,
     required String imagePath,
     required String title,
     required String subtitle,
@@ -262,6 +906,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
     required Color badgeColor,
     required IconData iconData,
     required String footerText,
+    required String expiryText,
     required int coinsRequired,
     required bool isUnlocked,
     bool isNetworkImage = false,
@@ -384,54 +1029,84 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9F9F9),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF9F9F9),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(iconData, color: primaryColor, size: 18),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        footerText,
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.textGrey,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      Text(
+                        expiryText,
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.magenta,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: offer.isNotEmpty ? () => _showOfferDetails(offer) : null,
                   child: Text(
-                    footerText,
+                    'VIEW MORE',
                     style: GoogleFonts.poppins(
-                      color: AppTheme.textGrey,
+                      color: primaryColor,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: isUnlocked
+                      ? null
+                      : (offer.isNotEmpty ? () => _unlockOffer(offer) : null),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isUnlocked ? primaryColor : const Color(0xFFFF4757),
+                    backgroundColor: isUnlocked ? const Color(0xFF2E9C68) : const Color(0xFFFF4757),
+                    disabledBackgroundColor: const Color(0xFF2E9C68),
                     foregroundColor: Colors.white,
+                    disabledForegroundColor: Colors.white,
                     elevation: isUnlocked ? 0 : 4,
                     shadowColor: const Color(0xFFFF4757).withOpacity(0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (!isUnlocked) ...[
-                        const Icon(Icons.lock_outline, size: 16),
+                        const Icon(Icons.lock_outline, size: 14),
                         const SizedBox(width: 4),
                       ],
                       Text(
-                        isUnlocked ? 'Claim' : 'Unlock',
+                        isUnlocked ? 'Unlocked' : 'Unlock',
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 12,
                         ),
                       ),
                       if (!isUnlocked) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(10),
@@ -442,11 +1117,11 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                                 '$coinsRequired',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 11,
+                                  fontSize: 10,
                                 ),
                               ),
-                              const SizedBox(width: 2),
-                              const Icon(Icons.monetization_on, size: 12, color: Color(0xFFFFD700)),
+                              const SizedBox(width: 1),
+                              const Icon(Icons.monetization_on, size: 10, color: Color(0xFFFFD700)),
                             ],
                           ),
                         ),
@@ -467,44 +1142,77 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
       backgroundColor: bgColor,
       elevation: 0,
       automaticallyImplyLeading: false,
-      title: Text(
-        'Explore',
-        style: GoogleFonts.poppins(
-          color: primaryColor,
-          fontWeight: FontWeight.w900,
-          fontSize: 22,
-        ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Explore',
+            style: GoogleFonts.poppins(
+              color: primaryColor,
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
+            ),
+          ),
+          GestureDetector(
+            onTap: _showLocationSwitcher,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on, size: 12, color: primaryColor),
+                const SizedBox(width: 4),
+                Text(
+                  _locationName,
+                  style: GoogleFonts.poppins(
+                    color: AppTheme.textGrey,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Icon(Icons.arrow_drop_down, size: 14, color: primaryColor),
+              ],
+            ),
+          ),
+        ],
       ),
       actions: [
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: coinPillColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(2),
-                child: const Icon(Icons.attach_money, color: Colors.white, size: 12),
+        ValueListenableBuilder<int>(
+          valueListenable: BalanceManager.instance.balance,
+          builder: (context, balance, child) {
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: coinPillColor,
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(width: 4),
-              Text(
-                '2,450',
-                style: GoogleFonts.poppins(
-                  color: AppTheme.textDark,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(2),
+                    child: const Icon(Icons.monetization_on, color: Colors.amber, size: 14),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    balance.toString().replaceAllMapped(
+                      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                      (Match m) => '${m[1]},',
+                    ),
+                    style: GoogleFonts.poppins(
+                      color: AppTheme.textDark,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
+        const SizedBox(width: 8),
         IconButton(
           icon: Icon(Icons.notifications, color: primaryColor),
           onPressed: () {},
@@ -604,8 +1312,8 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
           Container(
             width: 60,
             height: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9F9F9),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF9F9F9),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -654,8 +1362,8 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
             Container(
               width: 70,
               height: 70,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9F9F9),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF9F9F9),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -685,5 +1393,4 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
       ),
     );
   }
-
 }

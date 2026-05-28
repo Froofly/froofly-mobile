@@ -1,15 +1,173 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 import 'theme.dart';
 
-class MembershipScreen extends StatelessWidget {
+class MembershipScreen extends StatefulWidget {
   const MembershipScreen({super.key});
+
+  @override
+  State<MembershipScreen> createState() => _MembershipScreenState();
+}
+
+class _MembershipScreenState extends State<MembershipScreen> {
+  String _currentPlan = 'Froofly Free';
+  bool _isLoading = true;
+  String? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentPlan();
+  }
+
+  Future<void> _loadCurrentPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getString('userId');
+    setState(() {
+      _currentPlan = prefs.getString('membershipPlan') ?? 'Froofly Free';
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _upgradePlan(String planName, String price) async {
+    if (_userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to upgrade your membership!')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            const CircularProgressIndicator(color: AppTheme.primaryPurple),
+            const SizedBox(height: 24),
+            Text(
+              'Processing secure checkout...',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.classicNavy),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Contacting secure gateway for $price',
+              style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textGrey),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+
+    // Secure simulated network checkout
+    await Future.delayed(const Duration(seconds: 2));
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://froofly-backend.onrender.com/auth/membership/$_userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'plan': planName}),
+      );
+
+      Navigator.pop(context); // pop secured payment gateway loader
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('membershipPlan', planName);
+
+        setState(() {
+          _currentPlan = planName;
+        });
+
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE5F8ED),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.workspace_premium, color: Color(0xFF2E9C68), size: 48),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Welcome to $planName!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Your subscription has been successfully activated.\n\nYou now have premium boosts and exclusive deal unlocks enabled on your account!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13, height: 1.5),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E9C68),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(
+                        'Awesome!',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      } else {
+        throw 'Failed to upgrade. Code: ${response.statusCode}';
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // safety loader pop
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Upgrade failed: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final bgColor = const Color(0xFFF9F9F9);
     final primaryColor = const Color(0xFF0A3D62);
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: bgColor,
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryPurple)),
+      );
+    }
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -196,17 +354,17 @@ class MembershipScreen extends StatelessWidget {
             width: double.infinity,
             height: 50,
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: _currentPlan == 'Froofly Free' ? null : () => _upgradePlan('Froofly Free', 'Free'),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppTheme.textGrey, width: 1.5),
+                side: BorderSide(color: _currentPlan == 'Froofly Free' ? AppTheme.textGrey : const Color(0xFF0A3D62), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
               child: Text(
-                'Current Plan',
+                _currentPlan == 'Froofly Free' ? 'Current Plan' : 'Downgrade to Free',
                 style: GoogleFonts.poppins(
-                  color: AppTheme.textGrey,
+                  color: _currentPlan == 'Froofly Free' ? AppTheme.textGrey : const Color(0xFF0A3D62),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -292,17 +450,17 @@ class MembershipScreen extends StatelessWidget {
             width: double.infinity,
             height: 50,
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: _currentPlan == 'Froofly Plus' ? null : () => _upgradePlan('Froofly Plus', '₹99/mo'),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF0A3D62), width: 1.5),
+                side: BorderSide(color: _currentPlan == 'Froofly Plus' ? AppTheme.textGrey : const Color(0xFF0A3D62), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
               child: Text(
-                'Get Froofly Plus',
+                _currentPlan == 'Froofly Plus' ? 'Current Plan' : 'Get Froofly Plus',
                 style: GoogleFonts.poppins(
-                  color: const Color(0xFF0A3D62),
+                  color: _currentPlan == 'Froofly Plus' ? AppTheme.textGrey : const Color(0xFF0A3D62),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -395,9 +553,9 @@ class MembershipScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _currentPlan == 'Froofly Pro' ? null : () => _upgradePlan('Froofly Pro', '₹199/mo'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA61E4D),
+                    backgroundColor: _currentPlan == 'Froofly Pro' ? AppTheme.textGrey : const Color(0xFFA61E4D),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -405,7 +563,7 @@ class MembershipScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Get Froofly Pro',
+                    _currentPlan == 'Froofly Pro' ? 'Current Plan' : 'Get Froofly Pro',
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,

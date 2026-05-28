@@ -68,6 +68,123 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 
+  void _showShareSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Share Your Invite Link',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textDark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Send this link to your friends. You earn 100 coins when they sign up!',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: AppTheme.textGrey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildShareOption(
+                    icon: Icons.chat,
+                    label: 'WhatsApp',
+                    color: const Color(0xFF25D366),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _copyLink();
+                    },
+                  ),
+                  _buildShareOption(
+                    icon: Icons.share,
+                    label: 'Twitter',
+                    color: const Color(0xFF1DA1F2),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _copyLink();
+                    },
+                  ),
+                  _buildShareOption(
+                    icon: Icons.camera_alt,
+                    label: 'Instagram',
+                    color: const Color(0xFFE1306C),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _copyLink();
+                    },
+                  ),
+                  _buildShareOption(
+                    icon: Icons.copy,
+                    label: 'Copy Link',
+                    color: _primaryColor,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _copyLink();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShareOption({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              backgroundColor: color.withOpacity(0.1),
+              radius: 28,
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textDark,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -250,7 +367,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
           width: double.infinity,
           height: 50,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: _showShareSheet,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFF7F5F5),
               foregroundColor: AppTheme.textDark,
