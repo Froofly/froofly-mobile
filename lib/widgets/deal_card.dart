@@ -14,6 +14,7 @@ class DealCard extends StatelessWidget {
   final Color badgeColor;
   final Color discountColor;
   final VoidCallback? onUnlockPressed;
+  final bool isNetworkImage;
 
   const DealCard({
     super.key,
@@ -28,6 +29,7 @@ class DealCard extends StatelessWidget {
     required this.badgeColor,
     required this.discountColor,
     this.onUnlockPressed,
+    this.isNetworkImage = false,
   });
 
   @override
@@ -58,10 +60,23 @@ class DealCard extends StatelessWidget {
                 fit: StackFit.expand,
                 clipBehavior: Clip.none,
                 children: [
-                  Image.asset(
-                    imagePath,
-                    fit: BoxFit.cover,
-                  ),
+                  isNetworkImage
+                      ? Image.network(
+                          imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[300],
+                            child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+                          ),
+                        )
+                      : Image.asset(
+                          imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[300],
+                            child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+                          ),
+                        ),
                   // "Ad" Badge
                   Positioned(
                     top: 20,

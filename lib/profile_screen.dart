@@ -39,9 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _totalClaims = 0;
   String _membershipPlan = 'Froofly Free';
 
-  List<double> _coinsEarnedList = [0, 0, 0, 0, 0, 0, 0];
-  String _percentageChange = '0%';
-  List<Map<String, dynamic>> _uploadCategories = [];
+
 
   @override
   void initState() {
@@ -69,9 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     int fetchedTotalBills = 0;
     int fetchedAchievements = 0;
     int fetchedTotalClaims = 0;
-    List<double> fetchedCoinsList = _coinsEarnedList;
-    String fetchedPercentage = _percentageChange;
-    List<Map<String, dynamic>> fetchedCategories = _uploadCategories;
 
     if (userId != null && userId.isNotEmpty) {
       try {
@@ -82,18 +77,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fetchedTotalBills = data['totalBills'] ?? 0;
           fetchedAchievements = data['achievements'] ?? 0;
           fetchedTotalClaims = data['totalClaims'] ?? 0;
-          if (data['analytics'] != null) {
-            final a = data['analytics'];
-            if (a['coinsEarnedList'] != null) {
-              fetchedCoinsList = List<double>.from(a['coinsEarnedList'].map((x) => (x as num).toDouble()));
-            }
-            if (a['percentageChange'] != null) {
-              fetchedPercentage = a['percentageChange'];
-            }
-            if (a['categories'] != null) {
-              fetchedCategories = List<Map<String, dynamic>>.from(a['categories']);
-            }
-          }
         }
 
         // 2. Sync Avatar from Upstash Redis if local is missing
@@ -129,9 +112,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _totalBills = fetchedTotalBills;
       _achievements = fetchedAchievements;
       _totalClaims = fetchedTotalClaims;
-      _coinsEarnedList = fetchedCoinsList;
-      _percentageChange = fetchedPercentage;
-      _uploadCategories = fetchedCategories;
       _isLoading = false;
     });
   }
@@ -244,12 +224,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildInfoCard(primaryColor),
                   const SizedBox(height: 24),
                   _buildStatsRow(),
-                  const SizedBox(height: 32),
-                  _buildAnalyticsHeader(),
-                  const SizedBox(height: 16),
-                  _buildChartCard(),
-                  const SizedBox(height: 16),
-                  _buildUploadCategoriesCard(),
                   const SizedBox(height: 32),
                   _buildSettingsList(),
                 ],
@@ -593,200 +567,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Analytics ────────────────────────────────────────────────────────────
-
-  Widget _buildAnalyticsHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          'Spend & Earn Analytics',
-          style: GoogleFonts.poppins(
-            color: AppTheme.textDark,
-            fontSize: 16,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        Text(
-          'LAST 7 DAYS',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF0A3D62),
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChartCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'COINS EARNED',
-                style: GoogleFonts.poppins(
-                  color: AppTheme.textGrey,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5F8ED),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  _percentageChange,
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF2E9C68),
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            height: 80,
-            child: CustomPaint(
-              size: const Size(double.infinity, 80),
-              painter: _CurvedChartPainter(_coinsEarnedList),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) {
-              return Text(
-                day,
-                style: GoogleFonts.poppins(
-                  color: AppTheme.textGrey.withOpacity(0.7),
-                  fontSize: 10,
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUploadCategoriesCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'UPLOAD CATEGORIES',
-            style: GoogleFonts.poppins(
-              color: AppTheme.textGrey,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 24),
-          if (_uploadCategories.isEmpty)
-            Text(
-              'No recent spending categories.',
-              style: GoogleFonts.poppins(
-                color: AppTheme.textGrey.withOpacity(0.8),
-                fontSize: 12,
-              ),
-            ),
-          ..._uploadCategories.map((c) {
-             final hexStr = c['colorHex'] as String;
-             final colorVal = int.tryParse(hexStr) ?? 0xFF0A3D62;
-             return Column(
-               children: [
-                 _buildCategoryProgress(c['name'], c['percentage'], c['value'], Color(colorVal)),
-                 const SizedBox(height: 16),
-               ],
-             );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryProgress(String name, String percentage, double value, Color color) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(name,
-                style:
-                    GoogleFonts.poppins(color: AppTheme.textDark, fontSize: 10, fontWeight: FontWeight.bold)),
-            Text(percentage,
-                style:
-                    GoogleFonts.poppins(color: AppTheme.textDark, fontSize: 10, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 6,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF9F9F9),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: value,
-            child: Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   // ─── Settings ─────────────────────────────────────────────────────────────
-
-
 
   Widget _buildSettingsList() {
     return Container(
@@ -906,62 +687,3 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 }
 
-// ─── Chart painter ────────────────────────────────────────────────────────────
-
-class _CurvedChartPainter extends CustomPainter {
-  final List<double> dataPoints;
-
-  _CurvedChartPainter(this.dataPoints);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (dataPoints.isEmpty) return;
-
-    final paint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF0A3D62), Color(0xFFD4AF37)],
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..strokeWidth = 4.0
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    double maxVal = dataPoints.reduce((a, b) => a > b ? a : b);
-    if (maxVal == 0) maxVal = 1;
-
-    final path = Path();
-    List<Offset> points = [];
-    for (int i = 0; i < dataPoints.length; i++) {
-      double x = size.width * (i / (dataPoints.length - 1));
-      // scale y so data points fill height but have padding
-      double y = size.height - ((dataPoints[i] / maxVal) * size.height * 0.8) - (size.height * 0.1);
-      points.add(Offset(x, y));
-    }
-
-    path.moveTo(points[0].dx, points[0].dy);
-    for (int i = 0; i < points.length - 1; i++) {
-        _addBezierCurve(path, points[i], points[i+1]);
-    }
-
-    canvas.drawPath(path, paint);
-
-    final dotPaintCyan = Paint()
-      ..color = const Color(0xFFD4AF37)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(points.last, 4, dotPaintCyan);
-  }
-
-  void _addBezierCurve(Path path, Offset start, Offset end) {
-    final cx1 = start.dx + (end.dx - start.dx) / 2;
-    final cy1 = start.dy;
-    final cx2 = cx1;
-    final cy2 = end.dy;
-    path.cubicTo(cx1, cy1, cx2, cy2, end.dx, end.dy);
-  }
-
-  @override
-  bool shouldRepaint(covariant _CurvedChartPainter oldDelegate) {
-    return true;
-  }
-}

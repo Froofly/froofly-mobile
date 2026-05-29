@@ -1,10 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'theme.dart';
 import 'widgets/deal_card.dart';
 import 'balance_manager.dart';
 
 class _DealData {
+  final String id;
   final String imagePath;
   final String brandName;
   final String subtitle;
@@ -16,8 +20,10 @@ class _DealData {
   final Color badgeColor;
   final Color discountColor;
   final String category; // 'Food', 'Retail', 'Health', 'Beauty', 'Travel', 'Entertainment'
+  final int coinsRequired;
 
   const _DealData({
+    this.id = '',
     required this.imagePath,
     required this.brandName,
     required this.subtitle,
@@ -29,6 +35,7 @@ class _DealData {
     required this.badgeColor,
     required this.discountColor,
     required this.category,
+    this.coinsRequired = 100,
   });
 }
 
@@ -50,6 +57,61 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
     'Entertainment',
   ];
   int _selectedCategoryIndex = 0;
+  
+  String? _userId;
+  double _latitude = 12.9716;
+  double _longitude = 77.5946;
+  List<dynamic>? _fetchedOffers;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserContextAndFetch();
+  }
+
+  Future<void> _loadUserContextAndFetch() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _userId = prefs.getString('userId');
+      _latitude = prefs.getDouble('latitude') ?? 12.9716;
+      _longitude = prefs.getDouble('longitude') ?? 77.5946;
+      
+      await _fetchOffers();
+    } catch (e) {
+      debugPrint('Error loading user context: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _fetchOffers() async {
+    try {
+      String categoryParam = '';
+      if (_selectedCategoryIndex > 0) {
+        final categoryName = _categories[_selectedCategoryIndex];
+        categoryParam = '&category=${Uri.encodeComponent(categoryName)}';
+      }
+      
+      final url = 'https://froofly-backend.onrender.com/offer/explore?lat=$_latitude&lng=$_longitude$categoryParam';
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            _fetchedOffers = data;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching backend offers: $e');
+    }
+  }
 
   // All deals data
   final List<_DealData> _allDeals = [
@@ -197,8 +259,31 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
     return _allDeals.where((d) => d.category == selectedCategory).toList();
   }
 
-  Future<void> _unlockDeal(_DealData deal) async {
-    final int coinsRequired = 100;
+  List<Map<String, dynamic>> get _dealsToShow {
+    if (_fetchedOffers != null && _fetchedOffers!.isNotEmpty) {
+      return _fetchedOffers!.cast<Map<String, dynamic>>();
+    }
+    // If empty/loading/offline, map the local fallback deals
+    return _filteredDeals.map((d) => {
+      'id': d.id,
+      'isMock': true,
+      'imagePath': d.imagePath,
+      'brandName': d.brandName,
+      'subtitle': d.subtitle,
+      'discountText': d.discountText,
+      'discountDesc': d.discountDesc,
+      'timeLeft': d.timeLeft,
+      'claimed': d.claimed,
+      'badgeText': d.badgeText,
+      'badgeColor': d.badgeColor.value,
+      'discountColor': d.discountColor.value,
+      'coinsRequired': d.coinsRequired,
+    }).toList();
+  }
+
+  Future<void> _unlockDeal(Map<String, dynamic> deal) async {
+    final bool isMock = deal['isMock'] == true;
+    final int coinsRequired = deal['coinsRequired'] ?? 100;
     final currentBal = BalanceManager.instance.balance.value;
 
     if (currentBal < coinsRequired) {
@@ -231,7 +316,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text('Unlock Offer?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: AppTheme.primaryPurple)),
         content: Text(
-          'Do you want to unlock "${deal.brandName} - ${deal.discountText}" for $coinsRequired coins?',
+          'Do you want to unlock "${(deal['brandName'] ?? deal['title'] ?? '')} - ${(deal['discountText'] ?? deal['description'] ?? '')}" for $coinsRequired coins?',
           style: GoogleFonts.poppins(color: AppTheme.textDark),
         ),
         actions: [
@@ -253,13 +338,75 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
     if (confirm != true) return;
 
-    final int newBalance = currentBal - coinsRequired;
-    await BalanceManager.instance.updateBalance(newBalance);
+    if (isMock) {
+      final int newBalance = currentBal - coinsRequired;
+      await BalanceManager.instance.updateBalance(newBalance);
 
-    final int len = deal.brandName.length;
-    final String brandSub = deal.brandName.substring(0, len < 3 ? len : 3).toUpperCase();
-    final String couponCode = 'FRFL-${brandSub}-${DateTime.now().millisecondsSinceEpoch.toString().substring(9)}';
+      final String brandName = deal['brandName'] ?? '';
+      final int len = brandName.length;
+      final String brandSub = brandName.substring(0, len < 3 ? len : 3).toUpperCase();
+      final String couponCode = 'FRFL-${brandSub}-${DateTime.now().millisecondsSinceEpoch.toString().substring(9)}';
 
+      _showCelebrationDialog(deal['brandName'] ?? '', deal['discountText'] ?? '', couponCode);
+    } else {
+      // Backend unlock!
+      if (_userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to unlock offers!')),
+        );
+        return;
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      try {
+        final response = await http.post(
+          Uri.parse('https://froofly-backend.onrender.com/offer/claim/${deal['id']}'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({'userId': _userId}),
+        );
+
+        Navigator.pop(context); // pop loading spinner
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final data = json.decode(response.body);
+          final int updatedBalance = data['currentBalance'] ?? (currentBal - coinsRequired);
+
+          await BalanceManager.instance.updateBalance(updatedBalance);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt('currentBalance', updatedBalance);
+
+          final String couponCode = 'FRFL-${deal['id'].toString().substring(deal['id'].toString().length - 8).toUpperCase()}';
+          
+          final String brand = deal['merchant']?['businessName'] ?? deal['title'] ?? 'Merchant';
+          final String title = deal['title'] ?? 'Unlocked Deal';
+
+          _showCelebrationDialog(brand, title, couponCode);
+          
+          // Re-fetch offers to update claim state if needed
+          _fetchOffers();
+        } else {
+          final err = json.decode(response.body);
+          throw err['message'] ?? 'Claim failed';
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to unlock offer: $e'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  void _showCelebrationDialog(String brand, String offerTitle, String couponCode) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -288,7 +435,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
               ),
               const SizedBox(height: 12),
               Text(
-                'You have successfully unlocked "${deal.brandName} - ${deal.discountText}"!\n\nUse Coupon Code below at the counter:\n',
+                'You have successfully unlocked "$brand - $offerTitle"!\n\nUse Coupon Code below at the counter:\n',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
               ),
@@ -334,7 +481,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final deals = _filteredDeals;
+    final deals = _dealsToShow;
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(),
@@ -342,36 +489,94 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
         children: [
           _buildCategoryList(),
           Expanded(
-            child: deals.isEmpty
-                ? Center(
-                    child: Text(
-                      'No deals available',
-                      style: GoogleFonts.poppins(
-                        color: AppTheme.textGrey,
-                        fontSize: 14,
-                      ),
-                    ),
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
                   )
-                : PageView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: deals.length,
-                    itemBuilder: (context, index) {
-                      final d = deals[index];
-                      return DealCard(
-                        imagePath: d.imagePath,
-                        brandName: d.brandName,
-                        subtitle: d.subtitle,
-                        discountText: d.discountText,
-                        discountDesc: d.discountDesc,
-                        timeLeft: d.timeLeft,
-                        claimed: d.claimed,
-                        badgeText: d.badgeText,
-                        badgeColor: d.badgeColor,
-                        discountColor: d.discountColor,
-                        onUnlockPressed: () => _unlockDeal(d),
-                      );
-                    },
-                  ),
+                : deals.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No deals available',
+                          style: GoogleFonts.poppins(
+                            color: AppTheme.textGrey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    : PageView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: deals.length,
+                        itemBuilder: (context, index) {
+                          final d = deals[index];
+                          final bool isMock = d['isMock'] == true;
+                          
+                          final String imagePath = isMock 
+                              ? (d['imagePath'] ?? 'assets/images/wellness.png')
+                              : (d['merchant'] != null &&
+                                     d['merchant']['shopLogo'] != null &&
+                                     d['merchant']['shopLogo'].toString().startsWith('http')
+                                  ? d['merchant']['shopLogo'].toString()
+                                  : 'assets/images/wellness.png');
+                          
+                          final String brandName = isMock 
+                              ? (d['brandName'] ?? 'Merchant')
+                              : (d['merchant']?['businessName'] ?? d['title'] ?? 'Merchant');
+
+                          final String subtitle = isMock
+                              ? (d['subtitle'] ?? '')
+                              : (d['description'] ?? 'Exclusive Drop');
+
+                          final String discountText = isMock
+                              ? (d['discountText'] ?? '')
+                              : (d['offerType'] == 'PERCENTAGE' ? '${d['maxDiscount']}% OFF' : 'EXCLUSIVE');
+
+                          final String discountDesc = isMock
+                              ? (d['discountDesc'] ?? '')
+                              : (d['title'] ?? 'Special Deal');
+
+                          String timeLeft = '3 DAYS LEFT';
+                          if (isMock) {
+                            timeLeft = d['timeLeft'] ?? '3 DAYS LEFT';
+                          } else if (d['validityEnd'] != null) {
+                            try {
+                              final end = DateTime.parse(d['validityEnd']);
+                              final diff = end.difference(DateTime.now()).inDays;
+                              timeLeft = diff > 0 ? '$diff DAYS LEFT' : 'TODAY';
+                            } catch (_) {}
+                          }
+
+                          final String claimed = isMock
+                              ? (d['claimed'] ?? '0 CLAIMED')
+                              : ('${d['totalClaims'] ?? 0} CLAIMED');
+
+                          final String badgeText = isMock
+                              ? (d['badgeText'] ?? '')
+                              : (d['offerType'] == 'PERCENTAGE' ? 'PERCENTAGE OFF' : 'EXCLUSIVE');
+
+                          final Color badgeColor = isMock
+                              ? Color(d['badgeColor'] ?? AppTheme.primaryPurple.value)
+                              : AppTheme.magenta;
+
+                          final Color discountColor = isMock
+                              ? Color(d['discountColor'] ?? AppTheme.primaryPurple.value)
+                              : const Color(0xFF0A3D62);
+
+                          return DealCard(
+                            imagePath: imagePath,
+                            brandName: brandName,
+                            subtitle: subtitle,
+                            discountText: discountText,
+                            discountDesc: discountDesc,
+                            timeLeft: timeLeft,
+                            claimed: claimed,
+                            badgeText: badgeText,
+                            badgeColor: badgeColor,
+                            discountColor: discountColor,
+                            onUnlockPressed: () => _unlockDeal(d),
+                            isNetworkImage: !isMock,
+                          );
+                        },
+                      ),
           ),
         ],
       ),
@@ -444,6 +649,12 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
             onTap: () {
               setState(() {
                 _selectedCategoryIndex = index;
+                _isLoading = true;
+              });
+              _fetchOffers().then((_) {
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                }
               });
             },
             child: Container(
