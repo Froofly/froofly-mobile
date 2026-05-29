@@ -31,7 +31,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _email = '';
   String _phoneNumber = '';
   String _frooflyId = '';
-  int _currentBalance = 0;
   String _avatarUrl = '';
   bool _isLoading = true;
   int _totalBills = 0;
@@ -56,7 +55,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _email = prefs.getString('email') ?? '';
       _phoneNumber = prefs.getString('phoneNumber') ?? '';
       _frooflyId = prefs.getString('frooflyId') ?? '';
-      _currentBalance = prefs.getInt('currentBalance') ?? 0;
       _membershipPlan = prefs.getString('membershipPlan') ?? 'Froofly Free';
       _avatarUrl = prefs.getString('avatarUrl') ?? '';
     });
