@@ -911,228 +911,237 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
     required bool isUnlocked,
     bool isNetworkImage = false,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
+    return GestureDetector(
+      onTap: offer.isNotEmpty ? () => _showOfferDetails(offer) : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
             ),
-            child: Stack(
-              children: [
-                isNetworkImage 
-                  ? Image.network(
-                      imagePath,
-                      height: 140,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 140,
-                          width: double.infinity,
-                          color: Colors.grey[300],
-                          child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
-                        );
-                      },
-                    )
-                  : Image.asset(
-                      imagePath,
-                      height: 140,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 140,
-                          width: double.infinity,
-                          color: Colors.grey[300],
-                          child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
-                        );
-                      },
+          ],
+        ),
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              child: Stack(
+                children: [
+                  isNetworkImage 
+                    ? Image.network(
+                        imagePath,
+                        height: 140,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 140,
+                            width: double.infinity,
+                            color: Colors.grey[300],
+                            child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        imagePath,
+                        height: 140,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 140,
+                            width: double.infinity,
+                            color: Colors.grey[300],
+                            child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+                          );
+                        },
+                      ),
+                  Container(
+                    height: 140,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.7),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
-                Container(
-                  height: 140,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.7),
-                        Colors.transparent,
+                  ),
+                  if (badgeText.isNotEmpty)
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: badgeColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-                if (badgeText.isNotEmpty)
-                  Positioned(
-                    top: 16,
-                    left: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                Positioned(
-                  bottom: 16,
-                  left: 16,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF9F9F9),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(iconData, color: primaryColor, size: 18),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        footerText,
-                        style: GoogleFonts.poppins(
-                          color: AppTheme.textGrey,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          footerText,
+                          style: GoogleFonts.poppins(
+                            color: AppTheme.textGrey,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Text(
-                        expiryText,
-                        style: GoogleFonts.poppins(
-                          color: AppTheme.magenta,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 4),
+                        Text(
+                          expiryText,
+                          style: GoogleFonts.poppins(
+                            color: AppTheme.magenta,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                TextButton(
-                  onPressed: offer.isNotEmpty ? () => _showOfferDetails(offer) : null,
-                  child: Text(
-                    'VIEW MORE',
-                    style: GoogleFonts.poppins(
-                      color: primaryColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: isUnlocked
-                      ? null
-                      : (offer.isNotEmpty ? () => _unlockOffer(offer) : null),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isUnlocked ? const Color(0xFF2E9C68) : const Color(0xFFFF4757),
-                    disabledBackgroundColor: const Color(0xFF2E9C68),
-                    foregroundColor: Colors.white,
-                    disabledForegroundColor: Colors.white,
-                    elevation: isUnlocked ? 0 : 4,
-                    shadowColor: const Color(0xFFFF4757).withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  ),
-                  child: Row(
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (!isUnlocked) ...[
-                        const Icon(Icons.lock_outline, size: 14),
-                        const SizedBox(width: 4),
-                      ],
-                      Text(
-                        isUnlocked ? 'Unlocked' : 'Unlock',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      if (!isUnlocked) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
+                      ElevatedButton(
+                        onPressed: isUnlocked
+                            ? null
+                            : (offer.isNotEmpty ? () => _unlockOffer(offer) : null),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isUnlocked ? const Color(0xFF2E9C68) : const Color(0xFF00A86B),
+                          disabledBackgroundColor: const Color(0xFF2E9C68),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white,
+                          elevation: isUnlocked ? 0 : 4,
+                          shadowColor: const Color(0xFF00A86B).withOpacity(0.4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Row(
-                            children: [
-                              Text(
-                                '$coinsRequired',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!isUnlocked) ...[
+                              const Icon(Icons.lock_outline, size: 14, color: Colors.white),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              isUnlocked ? 'Unlocked' : 'Unlock',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                            if (!isUnlocked) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      '$coinsRequired',
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    const Icon(Icons.stars, size: 10, color: Color(0xFFFFD700)),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 1),
-                              const Icon(Icons.stars, size: 10, color: Color(0xFFFFD700)),
-                            ],
+                            ]
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: offer.isNotEmpty ? () => _showOfferDetails(offer) : null,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          child: Text(
+                            'VIEW MORE',
+                            style: GoogleFonts.poppins(
+                              color: primaryColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
-                      ]
+                      ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
