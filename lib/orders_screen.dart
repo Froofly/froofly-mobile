@@ -491,7 +491,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.monetization_on, color: Color(0xFFD4AF37), size: 14),
+                        const Icon(Icons.stars, color: Color(0xFFD4AF37), size: 14),
                       ],
                     ),
                   ],

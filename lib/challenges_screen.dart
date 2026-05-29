@@ -44,7 +44,7 @@ class ChallengesScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.monetization_on, color: Color(0xFF0A3D62), size: 14),
+                    const Icon(Icons.stars, color: Color(0xFF0A3D62), size: 14),
                     const SizedBox(width: 4),
                     Text(
                       currentBalance.toString().replaceAllMapped(

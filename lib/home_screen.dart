@@ -405,7 +405,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.monetization_on, color: AppTheme.primaryPurple, size: 16),
+                  const Icon(Icons.stars, color: AppTheme.primaryPurple, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     currentBalance.toString().replaceAllMapped(

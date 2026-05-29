@@ -553,7 +553,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                                 ),
                               ),
                               const SizedBox(width: 2),
-                              const Icon(Icons.monetization_on, size: 12, color: Color(0xFFFFD700)),
+                              const Icon(Icons.stars, size: 12, color: Color(0xFFFFD700)),
                             ],
                           ),
                         ),

@@ -211,7 +211,7 @@ class _CoinsRewardScreenState extends State<CoinsRewardScreen>
                             child: Icon(
                               widget.isJackpot
                                   ? Icons.auto_awesome
-                                  : Icons.monetization_on,
+                                  : Icons.stars,
                               size: 100,
                               color: widget.isJackpot
                                   ? Colors.orange

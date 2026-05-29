@@ -1121,7 +1121,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                                 ),
                               ),
                               const SizedBox(width: 1),
-                              const Icon(Icons.monetization_on, size: 10, color: Color(0xFFFFD700)),
+                              const Icon(Icons.stars, size: 10, color: Color(0xFFFFD700)),
                             ],
                           ),
                         ),
@@ -1193,7 +1193,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                       shape: BoxShape.circle,
                     ),
                     padding: const EdgeInsets.all(2),
-                    child: const Icon(Icons.monetization_on, color: Colors.amber, size: 14),
+                    child: const Icon(Icons.stars, color: Colors.amber, size: 14),
                   ),
                   const SizedBox(width: 4),
                   Text(

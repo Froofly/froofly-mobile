@@ -640,7 +640,7 @@ class _ScreenshotProcessingDialogState extends State<ScreenshotProcessingDialog>
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
-                                Icons.monetization_on,
+                                Icons.stars,
                                 color: AppTheme.champaignGold,
                                 size: 40,
                               ),
