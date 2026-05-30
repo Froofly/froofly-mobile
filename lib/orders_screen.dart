@@ -34,7 +34,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       _userId = prefs.getString('userId');
       if (_userId != null) {
         final response = await http.get(
-          Uri.parse('https://froofly-backend.onrender.com/offer/claims/$_userId'),
+          Uri.parse('https://backend-froofly.onrender.com/offer/claims/$_userId'),
         );
         if (response.statusCode == 200) {
           final List<dynamic> data = json.decode(response.body);
@@ -530,3 +530,4 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 }
+

@@ -171,7 +171,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
   Future<void> _fetchClaims() async {
     if (_userId == null) return;
     try {
-      final response = await http.get(Uri.parse('https://froofly-backend.onrender.com/offer/claims/$_userId'));
+      final response = await http.get(Uri.parse('https://backend-froofly.onrender.com/offer/claims/$_userId'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final Set<String> claimedIds = {};
@@ -196,7 +196,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
     });
 
     try {
-      final url = 'https://froofly-backend.onrender.com/offer/explore?lat=$_latitude&lng=$_longitude';
+      final url = 'https://backend-froofly.onrender.com/offer/explore?lat=$_latitude&lng=$_longitude';
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -674,7 +674,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://froofly-backend.onrender.com/offer/claim/${offer['id']}'),
+        Uri.parse('https://backend-froofly.onrender.com/offer/claim/${offer['id']}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': _userId}),
       );
@@ -1403,3 +1403,4 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
     );
   }
 }
+

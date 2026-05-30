@@ -47,7 +47,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       }
 
       final response = await http.delete(
-        Uri.parse('https://froofly-backend.onrender.com/auth/account/$userId'),
+        Uri.parse('https://backend-froofly.onrender.com/auth/account/$userId'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'reason': _selectedReason,
@@ -242,3 +242,4 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     );
   }
 }
+

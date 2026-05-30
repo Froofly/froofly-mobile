@@ -147,7 +147,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   Future<void> _fetchClaims() async {
     if (_userId == null) return;
     try {
-      final response = await http.get(Uri.parse('https://froofly-backend.onrender.com/offer/claims/$_userId'));
+      final response = await http.get(Uri.parse('https://backend-froofly.onrender.com/offer/claims/$_userId'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final Set<String> claimedIds = {};
@@ -174,7 +174,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     try {
       final String encodedCat = Uri.encodeComponent(widget.categoryName);
       final String encodedSub = Uri.encodeComponent(_selectedSubcategory);
-      final url = 'https://froofly-backend.onrender.com/offer/explore?lat=$_latitude&lng=$_longitude&category=$encodedCat&subcategory=$encodedSub';
+      final url = 'https://backend-froofly.onrender.com/offer/explore?lat=$_latitude&lng=$_longitude&category=$encodedCat&subcategory=$encodedSub';
       
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -266,7 +266,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://froofly-backend.onrender.com/offer/claim/${offer['id']}'),
+        Uri.parse('https://backend-froofly.onrender.com/offer/claim/${offer['id']}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': _userId}),
       );
@@ -988,3 +988,4 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     );
   }
 }
+

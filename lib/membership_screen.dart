@@ -72,7 +72,7 @@ class _MembershipScreenState extends State<MembershipScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://froofly-backend.onrender.com/auth/membership/$_userId'),
+        Uri.parse('https://backend-froofly.onrender.com/auth/membership/$_userId'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'plan': planName}),
       );
@@ -696,3 +696,4 @@ class _MembershipScreenState extends State<MembershipScreen> {
 
 
 }
+

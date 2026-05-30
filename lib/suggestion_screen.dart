@@ -30,7 +30,7 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://froofly-backend.onrender.com/suggestion'),
+        Uri.parse('https://backend-froofly.onrender.com/suggestion'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'text': text}),
       );
@@ -165,3 +165,4 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
     );
   }
 }
+

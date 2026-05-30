@@ -70,7 +70,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   static const _primaryColor = Color(0xFF0A3D62);
   static const _goldColor    = Color(0xFFD4AF37);
   static const _bgColor      = Color(0xFFF9F9F9);
-  static const _baseUrl      = 'https://froofly-backend.onrender.com';
+  static const _baseUrl      = 'https://backend-froofly.onrender.com';
 
   @override
   void initState() {
@@ -855,3 +855,4 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     );
   }
 }
+

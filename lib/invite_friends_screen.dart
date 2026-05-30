@@ -39,7 +39,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     if (userId == null) return;
 
     try {
-      final res = await http.get(Uri.parse('https://froofly-backend.onrender.com/auth/referrals/$userId'));
+      final res = await http.get(Uri.parse('https://backend-froofly.onrender.com/auth/referrals/$userId'));
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() {
@@ -582,3 +582,4 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 }
+

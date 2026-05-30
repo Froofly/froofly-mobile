@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (userId != null && userId.isNotEmpty) {
       try {
         // 1. Fetch Stats
-        final statsResponse = await http.get(Uri.parse('https://froofly-backend.onrender.com/auth/stats/$userId'));
+        final statsResponse = await http.get(Uri.parse('https://backend-froofly.onrender.com/auth/stats/$userId'));
         if (statsResponse.statusCode == 200) {
           final data = jsonDecode(statsResponse.body);
           fetchedTotalBills = data['totalBills'] ?? 0;
@@ -84,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
 
         if (avatarUrl.isEmpty || !localFileExists) {
-          final avatarResponse = await http.get(Uri.parse('https://froofly-backend.onrender.com/avatar/$userId'));
+          final avatarResponse = await http.get(Uri.parse('https://backend-froofly.onrender.com/avatar/$userId'));
           if (avatarResponse.statusCode == 200) {
             final data = jsonDecode(avatarResponse.body);
             final base64String = data['base64'] as String?;
@@ -684,4 +684,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 
 }
+
 
