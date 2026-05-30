@@ -196,15 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none_outlined, color: primaryColor),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NotificationPreferencesScreen()),
-              );
-            },
-          ),
+          const SizedBox(width: 16),
         ],
       ),
       body: _isLoading

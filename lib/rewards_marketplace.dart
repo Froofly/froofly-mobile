@@ -1221,11 +1221,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
             );
           },
         ),
-        const SizedBox(width: 8),
-        IconButton(
-          icon: Icon(Icons.notifications, color: primaryColor),
-          onPressed: () {},
-        ),
+        const SizedBox(width: 16),
       ],
     );
   }

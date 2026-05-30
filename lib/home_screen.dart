@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -64,12 +66,81 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
   double _longitude = 77.5946;
   List<dynamic>? _fetchedOffers;
   bool _isLoading = true;
+  Timer? _locationTimer;
 
   @override
   void initState() {
     super.initState();
     _loadUserContextAndFetch();
+    _initLocationTracking();
   }
+
+  @override
+  void dispose() {
+    _locationTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initLocationTracking() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('Location services are disabled.');
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('Location permissions are denied.');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('Location permissions are permanently denied.');
+        return;
+      }
+
+      // Initial fetch of current location
+      await _fetchAndUpdateLocation();
+
+      // Setup periodic updates every 10 minutes (600 seconds)
+      _locationTimer = Timer.periodic(const Duration(minutes: 10), (timer) async {
+        debugPrint('Periodic location update triggered...');
+        await _fetchAndUpdateLocation();
+      });
+    } catch (e) {
+      debugPrint('Error initializing location tracking: $e');
+    }
+  }
+
+  Future<void> _fetchAndUpdateLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+      });
+
+      await prefs.setDouble('latitude', _latitude);
+      await prefs.setDouble('longitude', _longitude);
+      
+      debugPrint('Updated location: $_latitude, $_longitude. Refreshing feeds...');
+      
+      // Refresh explore and deals with the new coordinates!
+      await _fetchOffers();
+    } catch (e) {
+      debugPrint('Error fetching current location: $e');
+    }
+  }
+
 
   Future<void> _loadUserContextAndFetch() async {
     if (!mounted) return;
@@ -537,7 +608,6 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
-          _buildCategoryList(),
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -689,10 +759,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
             );
           },
         ),
-        IconButton(
-          icon: const Icon(Icons.notifications, color: AppTheme.primaryPurple),
-          onPressed: () {},
-        ),
+        const SizedBox(width: 16),
       ],
     );
   }

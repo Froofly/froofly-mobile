@@ -129,11 +129,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
             icon: const Icon(Icons.refresh, color: _primaryColor),
             onPressed: _fetchChallenges,
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications, color: _primaryColor),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 16),
         ],
       ),
       body: _isLoading
@@ -232,14 +228,30 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'DAILY CHALLENGE',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'DAILY CHALLENGE',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  if (challenge['timeLeft'] != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '⏳ ${challenge['timeLeft']}',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ],
               ),
               Container(
                 width: 50,
@@ -464,6 +476,23 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
               fontSize: 10,
             ),
           ),
+          if (challenge['timeLeft'] != null && !isCompleted) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.timer_outlined, color: AppTheme.magenta, size: 12),
+                const SizedBox(width: 4),
+                Text(
+                  challenge['timeLeft'],
+                  style: GoogleFonts.poppins(
+                    color: AppTheme.magenta,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
           const Spacer(),
           if (isCompleted) ...[
             Row(
