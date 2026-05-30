@@ -62,156 +62,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
-  void _showRedeemModal(Map<String, dynamic> claim) {
-    final offer = claim['offer'] ?? {};
-    final merchant = offer['merchant'] ?? {};
-    final String merchantName = merchant['businessName'] ?? 'Store';
-    final String offerTitle = offer['title'] ?? 'Special Coupon';
-    final String claimId = claim['id'] ?? '';
-    final String couponCode = 'FRFL-${claimId.substring(claimId.length - 8).toUpperCase()}';
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        child: Container(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                merchantName.toUpperCase(),
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                offerTitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Animated Scanner box with custom borders
-              Container(
-                width: 180,
-                height: 180,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.grey.shade200, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Mock QR Box
-                    Center(
-                      child: Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Icon(Icons.qr_code_2, size: 120, color: primaryColor),
-                      ),
-                    ),
-                    // Neon scan animation lines
-                    Positioned(
-                      top: 15,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 3,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Coupon Code
-              Text(
-                'COUPON CODE',
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textGrey,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF9F9F9),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Text(
-                  couponCode,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.magenta,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Show this screen to the cashier or scan it at checkout to redeem your reward.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: AppTheme.textGrey,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: Text(
-                    'Done',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -500,29 +350,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ),
           ),
           if (isActive)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _showRedeemModal(claim),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6EBF0),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.storefront, color: primaryColor, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        'How to Redeem:',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    'View Details / Redeem QR',
+                  const SizedBox(height: 6),
+                  Text(
+                    'Visit the shop and share your Froofly ID at checkout. The merchant will find and accept your claim directly.',
                     style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: 11,
+                      color: const Color(0xFF2D3436),
+                      height: 1.4,
                     ),
                   ),
-                ),
+                ],
               ),
             ),
         ],
