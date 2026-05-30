@@ -23,7 +23,7 @@ class _DealData {
   final int coinsRequired;
 
   const _DealData({
-    this.id = '',
+    required this.id,
     required this.imagePath,
     required this.brandName,
     required this.subtitle,
@@ -35,7 +35,7 @@ class _DealData {
     required this.badgeColor,
     required this.discountColor,
     required this.category,
-    this.coinsRequired = 100,
+    required this.coinsRequired,
   });
 }
 
@@ -58,6 +58,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
   ];
   int _selectedCategoryIndex = 0;
   
+  Set<String> _claimedAdIds = {};
   String? _userId;
   double _latitude = 12.9716;
   double _longitude = 77.5946;
@@ -79,6 +80,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       _latitude = prefs.getDouble('latitude') ?? 12.9716;
       _longitude = prefs.getDouble('longitude') ?? 77.5946;
       
+      await _fetchClaims();
       await _fetchOffers();
     } catch (e) {
       debugPrint('Error loading user context: $e');
@@ -86,6 +88,29 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _fetchClaims() async {
+    if (_userId == null) return;
+    try {
+      final response = await http.get(Uri.parse('https://froofly-backend.onrender.com/offer/claims/$_userId'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final Set<String> claimedIds = {};
+        for (var c in data) {
+          if (c['adId'] != null) {
+            claimedIds.add(c['adId'].toString());
+          }
+        }
+        if (mounted) {
+          setState(() {
+            _claimedAdIds = claimedIds;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching claims: $e');
     }
   }
 
@@ -97,7 +122,12 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
         categoryParam = '&category=${Uri.encodeComponent(categoryName)}';
       }
       
-      final url = 'https://froofly-backend.onrender.com/offer/explore?lat=$_latitude&lng=$_longitude$categoryParam';
+      String userParam = '';
+      if (_userId != null) {
+        userParam = '&userId=$_userId';
+      }
+      
+      final url = 'https://froofly-backend.onrender.com/ad/explore?lat=$_latitude&lng=$_longitude$categoryParam$userParam';
       final response = await http.get(Uri.parse(url));
       
       if (response.statusCode == 200) {
@@ -109,14 +139,14 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
         }
       }
     } catch (e) {
-      debugPrint('Error fetching backend offers: $e');
+      debugPrint('Error fetching backend campaigns: $e');
     }
   }
 
   // All deals data
   final List<_DealData> _allDeals = [
-    // Food deals
     _DealData(
+      id: '',
       imagePath: 'assets/images/coffee.png',
       brandName: 'Starbucks',
       subtitle: 'Gourmet Coffee & Snacks',
@@ -128,8 +158,10 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: AppTheme.primaryPurple,
       discountColor: const Color(0xFF0A3D62),
       category: 'Food',
+      coinsRequired: 100,
     ),
     _DealData(
+      id: '',
       imagePath: 'assets/images/burger.png',
       brandName: 'Burger King',
       subtitle: 'Flame-Grilled Goodness',
@@ -141,8 +173,10 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: AppTheme.magenta,
       discountColor: AppTheme.magenta,
       category: 'Food',
+      coinsRequired: 100,
     ),
     _DealData(
+      id: '',
       imagePath: 'assets/images/coffee.png',
       brandName: 'Pizza Hut',
       subtitle: 'Fresh Pizzas & Sides',
@@ -154,13 +188,15 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: const Color(0xFFE85D04),
       discountColor: const Color(0xFFE85D04),
       category: 'Food',
+      coinsRequired: 100,
     ),
     // Retail deals
     _DealData(
+      id: '',
       imagePath: 'assets/images/wellness.png',
       brandName: 'Nike Store',
       subtitle: 'Premium Sportswear',
-      discountText: '\$20 OFF',
+      discountText: r'$20 OFF',
       discountDesc: 'On all Running Shoes above \$100',
       timeLeft: '2 DAYS LEFT',
       claimed: '980 CLAIMED',
@@ -168,8 +204,10 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: const Color(0xFF0A3D62),
       discountColor: const Color(0xFF0A3D62),
       category: 'Retail',
+      coinsRequired: 100,
     ),
     _DealData(
+      id: '',
       imagePath: 'assets/images/burger.png',
       brandName: 'Target',
       subtitle: 'Everything You Need',
@@ -181,9 +219,11 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: const Color(0xFF7A8FF6),
       discountColor: const Color(0xFF0A3D62),
       category: 'Retail',
+      coinsRequired: 100,
     ),
     // Health deals
     _DealData(
+      id: '',
       imagePath: 'assets/images/wellness.png',
       brandName: 'Wellness Pharm',
       subtitle: 'Premium Health & Vitamins',
@@ -195,12 +235,14 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: const Color(0xFF7A8FF6),
       discountColor: const Color(0xFF0A3D62),
       category: 'Health',
+      coinsRequired: 100,
     ),
     _DealData(
+      id: '',
       imagePath: 'assets/images/coffee.png',
       brandName: 'CVS Pharmacy',
       subtitle: 'Your Health Partner',
-      discountText: '\$5 OFF',
+      discountText: r'$5 OFF',
       discountDesc: 'On purchases of \$25 or more',
       timeLeft: '3 DAYS LEFT',
       claimed: '320 CLAIMED',
@@ -208,9 +250,11 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: const Color(0xFF2E9C68),
       discountColor: const Color(0xFF2E9C68),
       category: 'Health',
+      coinsRequired: 100,
     ),
     // Beauty deals
     _DealData(
+      id: '',
       imagePath: 'assets/images/wellness.png',
       brandName: 'Glow Spa',
       subtitle: 'Premium Spa & Salon',
@@ -222,9 +266,11 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: AppTheme.magenta,
       discountColor: AppTheme.magenta,
       category: 'Beauty',
+      coinsRequired: 100,
     ),
     // Travel deals
     _DealData(
+      id: '',
       imagePath: 'assets/images/burger.png',
       brandName: 'Uber',
       subtitle: 'Ride Anywhere',
@@ -236,9 +282,11 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: const Color(0xFF0A3D62),
       discountColor: const Color(0xFF0A3D62),
       category: 'Travel',
+      coinsRequired: 100,
     ),
     // Entertainment deals
     _DealData(
+      id: '',
       imagePath: 'assets/images/coffee.png',
       brandName: 'AMC Theatres',
       subtitle: 'Movies & Entertainment',
@@ -250,6 +298,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       badgeColor: const Color(0xFFA61E4D),
       discountColor: const Color(0xFFA61E4D),
       category: 'Entertainment',
+      coinsRequired: 100,
     ),
   ];
 
@@ -365,7 +414,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
       try {
         final response = await http.post(
-          Uri.parse('https://froofly-backend.onrender.com/offer/claim/${deal['id']}'),
+          Uri.parse('https://froofly-backend.onrender.com/ad/claim/${deal['id']}'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'userId': _userId}),
         );
@@ -387,7 +436,8 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
           _showCelebrationDialog(brand, title, couponCode);
           
-          // Re-fetch offers to update claim state if needed
+          // Re-fetch claims and offers to update claim state if needed
+          await _fetchClaims();
           _fetchOffers();
         } else {
           final err = json.decode(response.body);
@@ -537,9 +587,9 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                           String timeLeft = '3 DAYS LEFT';
                           if (isMock) {
                             timeLeft = d['timeLeft'] ?? '3 DAYS LEFT';
-                          } else if (d['validityEnd'] != null) {
+                          } else if (d['campaignEndDate'] != null) {
                             try {
-                              final end = DateTime.parse(d['validityEnd']);
+                              final end = DateTime.parse(d['campaignEndDate']);
                               final diff = end.difference(DateTime.now()).inDays;
                               timeLeft = diff > 0 ? '$diff DAYS LEFT' : 'TODAY';
                             } catch (_) {}
@@ -561,6 +611,14 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                               ? Color(d['discountColor'] ?? AppTheme.primaryPurple.value)
                               : const Color(0xFF0A3D62);
 
+                          final bool isExternal = isMock
+                              ? false
+                              : (d['campaignType'] == 'Leads' || d['campaignType'] == 'Promotion');
+
+                          final String? targetLink = isMock ? null : d['linkUrl'];
+                          
+                          final bool isUnlocked = isMock ? false : _claimedAdIds.contains(d['id']);
+
                           return DealCard(
                             imagePath: imagePath,
                             brandName: brandName,
@@ -574,6 +632,9 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                             discountColor: discountColor,
                             onUnlockPressed: () => _unlockDeal(d),
                             isNetworkImage: !isMock,
+                            isExternalLink: isExternal,
+                            linkUrl: targetLink,
+                            isUnlocked: isUnlocked,
                           );
                         },
                       ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 
-class DealCard extends StatelessWidget {
+class DealCard extends StatefulWidget {
   final String imagePath;
   final String brandName;
   final String subtitle;
@@ -15,6 +16,9 @@ class DealCard extends StatelessWidget {
   final Color discountColor;
   final VoidCallback? onUnlockPressed;
   final bool isNetworkImage;
+  final bool isExternalLink;
+  final String? linkUrl;
+  final bool isUnlocked;
 
   const DealCard({
     super.key,
@@ -30,8 +34,16 @@ class DealCard extends StatelessWidget {
     required this.discountColor,
     this.onUnlockPressed,
     this.isNetworkImage = false,
+    this.isExternalLink = false,
+    this.linkUrl,
+    this.isUnlocked = false,
   });
 
+  @override
+  State<DealCard> createState() => _DealCardState();
+}
+
+class _DealCardState extends State<DealCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -41,12 +53,12 @@ class DealCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(40),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             offset: const Offset(0, 10),
             blurRadius: 25,
           )
         ],
-        border: Border.all(color: AppTheme.classicNavy.withOpacity(0.2), width: 1.5),
+        border: Border.all(color: AppTheme.classicNavy.withValues(alpha: 0.2), width: 1.5),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(40),
@@ -60,9 +72,9 @@ class DealCard extends StatelessWidget {
                 fit: StackFit.expand,
                 clipBehavior: Clip.none,
                 children: [
-                  isNetworkImage
+                  widget.isNetworkImage
                       ? Image.network(
-                          imagePath,
+                          widget.imagePath,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Container(
                             color: Colors.grey[300],
@@ -70,7 +82,7 @@ class DealCard extends StatelessWidget {
                           ),
                         )
                       : Image.asset(
-                          imagePath,
+                          widget.imagePath,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Container(
                             color: Colors.grey[300],
@@ -84,9 +96,9 @@ class DealCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         'Ad',
@@ -113,12 +125,12 @@ class DealCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             offset: const Offset(0, 4),
                             blurRadius: 8,
                           )
                         ],
-                        border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 1),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -148,9 +160,9 @@ class DealCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.magenta.withOpacity(0.7),
+                    AppTheme.magenta.withValues(alpha: 0.7),
                     AppTheme.magenta,
-                    AppTheme.magenta.withOpacity(0.7),
+                    AppTheme.magenta.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -180,7 +192,7 @@ class DealCard extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      discountText.toUpperCase(),
+                                      widget.discountText.toUpperCase(),
                                       style: GoogleFonts.poppins(
                                         color: AppTheme.classicNavy,
                                         fontWeight: FontWeight.w600,
@@ -201,7 +213,7 @@ class DealCard extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      brandName.toUpperCase(),
+                                      widget.brandName.toUpperCase(),
                                       style: GoogleFonts.poppins(
                                         color: AppTheme.classicNavy,
                                         fontWeight: FontWeight.w900,
@@ -218,46 +230,85 @@ class DealCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // UNLOCK Button
+                        // UNLOCK / CLICK HERE Button
                         InkWell(
-                          onTap: onUnlockPressed,
+                          onTap: widget.isExternalLink
+                              ? () async {
+                                  final url = widget.linkUrl ?? '';
+                                  final uri = Uri.tryParse(url);
+                                  final messenger = ScaffoldMessenger.of(context);
+                                  if (uri != null && await canLaunchUrl(uri)) {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  } else {
+                                    if (!mounted) return;
+                                    messenger.showSnackBar(
+                                      const SnackBar(content: Text('Could not open target link')),
+                                    );
+                                  }
+                                }
+                              : (widget.isUnlocked ? null : widget.onUnlockPressed),
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
-                              color: AppTheme.ivoryWhite,
+                              color: widget.isUnlocked ? const Color(0xFF2E9C68) : AppTheme.ivoryWhite,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppTheme.classicNavy, width: 1.5),
+                              border: Border.all(
+                                color: widget.isUnlocked ? const Color(0xFF2E9C68) : AppTheme.classicNavy,
+                                width: 1.5,
+                              ),
                             ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'UNLOCK',
-                                style: GoogleFonts.poppins(
-                                  color: AppTheme.classicNavy,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'with ',
-                                    style: GoogleFonts.poppins(
-                                      color: AppTheme.classicNavy,
-                                      fontSize: 12,
-                                    ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  widget.isExternalLink
+                                      ? 'CLICK HERE'
+                                      : (widget.isUnlocked ? 'UNLOCKED' : 'UNLOCK'),
+                                  style: GoogleFonts.poppins(
+                                    color: widget.isUnlocked ? Colors.white : AppTheme.classicNavy,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
-                                  const Icon(Icons.lock_outline, color: AppTheme.classicNavy, size: 14),
-                                ],
-                              ),
-                            ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (widget.isExternalLink) ...[
+                                      Text(
+                                        'to visit ',
+                                        style: GoogleFonts.poppins(
+                                          color: AppTheme.classicNavy,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const Icon(Icons.open_in_new, color: AppTheme.classicNavy, size: 14),
+                                    ] else if (widget.isUnlocked) ...[
+                                      Text(
+                                        'coupon active ',
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const Icon(Icons.check_circle_outline, color: Colors.white, size: 14),
+                                    ] else ...[
+                                      Text(
+                                        'with ',
+                                        style: GoogleFonts.poppins(
+                                          color: AppTheme.classicNavy,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const Icon(Icons.lock_outline, color: AppTheme.classicNavy, size: 14),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
                     ),
                     
                     const SizedBox(height: 8),
@@ -271,7 +322,7 @@ class DealCard extends StatelessWidget {
                             const Icon(Icons.access_time, color: AppTheme.classicNavy, size: 18),
                             const SizedBox(width: 6),
                             Text(
-                              'Expires: $timeLeft',
+                              'Expires: ${widget.timeLeft}',
                               style: GoogleFonts.poppins(
                                 color: AppTheme.classicNavy,
                                 fontSize: 16,
@@ -306,7 +357,7 @@ class DealCard extends StatelessWidget {
                         const Icon(Icons.star, color: AppTheme.magenta, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          claimed.toUpperCase(),
+                          widget.claimed.toUpperCase(),
                           style: GoogleFonts.poppins(
                             color: AppTheme.classicNavy,
                             fontSize: 14,

@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
 
 import 'theme.dart';
 import 'balance_manager.dart';
+import 'offer_detail_screen.dart';
 
 class CategoryDetailsScreen extends StatefulWidget {
   final String categoryName;
@@ -25,6 +28,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   String? _userId;
   double _latitude = 12.9716;
   double _longitude = 77.5946;
+  Timer? _locationTimer;
 
   final Color primaryColor = const Color(0xFF0A3D62);
 
@@ -34,23 +38,110 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     _loadUserDataAndFetch();
   }
 
+  @override
+  void dispose() {
+    _locationTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _loadUserDataAndFetch() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
       _userId = prefs.getString('userId');
-      _latitude = prefs.getDouble('latitude') ?? 12.9716;
-      _longitude = prefs.getDouble('longitude') ?? 77.5946;
-
-      await _fetchClaims();
-      await _fetchCategoryOffers();
+      
+      await _startLocationTracking();
     } catch (e) {
       debugPrint('Error loading user data: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _startLocationTracking() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    try {
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('Location services are disabled.');
+        await _loadStoredLocationAndFetch();
+        return;
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('Location permissions are denied.');
+          await _loadStoredLocationAndFetch();
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('Location permissions are permanently denied.');
+        await _loadStoredLocationAndFetch();
+        return;
+      } 
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+      _latitude = position.latitude;
+      _longitude = position.longitude;
+      
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('latitude', _latitude);
+      await prefs.setDouble('longitude', _longitude);
+    } catch (e) {
+      debugPrint('Error getting current location: $e');
+      final prefs = await SharedPreferences.getInstance();
+      _latitude = prefs.getDouble('latitude') ?? 12.9716;
+      _longitude = prefs.getDouble('longitude') ?? 77.5946;
+    }
+
+    await _fetchClaims();
+    await _fetchCategoryOffers();
+
+    _locationTimer?.cancel();
+    _locationTimer = Timer.periodic(const Duration(minutes: 10), (timer) async {
+      await _updateCurrentLocation();
+    });
+  }
+
+  Future<void> _updateCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+      if (mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+        });
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setDouble('latitude', _latitude);
+        await prefs.setDouble('longitude', _longitude);
+        
+        _fetchCategoryOffers();
+      }
+    } catch (e) {
+      debugPrint('Error updating location in timer: $e');
+    }
+  }
+
+  Future<void> _loadStoredLocationAndFetch() async {
+    final prefs = await SharedPreferences.getInstance();
+    _latitude = prefs.getDouble('latitude') ?? 12.9716;
+    _longitude = prefs.getDouble('longitude') ?? 77.5946;
+    await _fetchClaims();
+    await _fetchCategoryOffers();
   }
 
   Future<void> _fetchClaims() async {
@@ -264,308 +355,20 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     }
   }
 
-  void _showOfferDetails(Map<String, dynamic> offer) {
-    final merchant = offer['merchant'] ?? {};
-    final String shopLogo = merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
-        ? merchant['shopLogo']
-        : 'assets/images/wellness.png';
-    final String merchantName = merchant['businessName'] ?? offer['title'] ?? 'Merchant';
-    final String offerTitle = offer['title'] ?? 'Special Deal';
-    final String description = offer['description'] ?? 'No description provided.';
-    final String offerType = offer['offerType'] ?? 'EXCLUSIVE';
-    final int coins = offer['coinsRequired'] ?? 100;
-    final List<dynamic> conditions = offer['conditions'] ?? [];
-    
-    final String road = merchant['addressRoad'] ?? '';
-    final String street = merchant['addressStreet'] ?? '';
-    final String fullAddress = [road, street].where((s) => s.isNotEmpty).join(', ');
-    final String addressText = fullAddress.isNotEmpty ? fullAddress : 'Nearby store location';
-
-    final bool isClaimed = _claimedOfferIds.contains(offer['id']);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.85,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                    child: shopLogo.startsWith('http')
-                        ? Image.network(
-                            shopLogo,
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildPlaceholderCover(),
-                          )
-                        : Image.asset(
-                            shopLogo,
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildPlaceholderCover(),
-                          ),
-                  ),
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black45,
-                      child: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              merchantName.toUpperCase(),
-                              style: GoogleFonts.poppins(
-                                color: primaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.verified, color: Colors.blue, size: 16),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        offerTitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.magenta.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          'OFFER TYPE: $offerType',
-                          style: GoogleFonts.poppins(
-                            color: AppTheme.magenta,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Description',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        description,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: AppTheme.textGrey,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Rules & Conditions',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (conditions.isEmpty)
-                        Text(
-                          '• Valid on all days.\n• Present QR code at the counter before billing.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: AppTheme.textGrey,
-                            height: 1.6,
-                          ),
-                        )
-                      else
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: conditions.map((rule) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  Expanded(
-                                    child: Text(
-                                      rule.toString(),
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13,
-                                        color: AppTheme.textGrey,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Direction',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: primaryColor.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(Icons.map_outlined, color: primaryColor, size: 20),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Store Address',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textDark,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    addressText,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: AppTheme.textGrey,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: isClaimed
-                      ? null
-                      : () {
-                          Navigator.pop(context);
-                          _unlockOffer(offer);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isClaimed ? const Color(0xFF2E9C68) : primaryColor,
-                    disabledBackgroundColor: const Color(0xFF2E9C68),
-                    foregroundColor: Colors.white,
-                    disabledForegroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(isClaimed ? Icons.check_circle_outline : Icons.lock_open, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        isClaimed ? 'UNLOCKED' : 'UNLOCK OFFER WITH $coins COINS',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPlaceholderCover() {
-    return Container(
-      height: 220,
-      color: Colors.grey.shade300,
-      child: const Center(
-        child: Icon(Icons.image, size: 50, color: Colors.grey),
+  Future<void> _showOfferDetails(Map<String, dynamic> offer) async {
+    final bool? updatedClaimed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OfferDetailScreen(
+          offer: offer,
+          claimedOfferIds: _claimedOfferIds,
+        ),
       ),
     );
+    if (updatedClaimed == true) {
+      await _fetchClaims();
+      await _fetchCategoryOffers();
+    }
   }
 
   @override
@@ -740,6 +543,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                                   badgeColor: AppTheme.magenta,
                                   iconData: Icons.local_offer,
                                   footerText: distance,
+                                  expiryText: expiryText,
                                   coinsRequired: coins,
                                   isUnlocked: isClaimed,
                                   isNetworkImage: shopLogo.startsWith('http'),
@@ -944,6 +748,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     required Color badgeColor,
     required IconData iconData,
     required String footerText,
+    required String expiryText,
     required int coinsRequired,
     required bool isUnlocked,
     bool isNetworkImage = false,
@@ -1084,7 +889,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Expires in 3 days',
+                          expiryText,
                           style: GoogleFonts.poppins(
                             color: AppTheme.magenta,
                             fontSize: 12,
