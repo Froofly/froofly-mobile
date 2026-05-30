@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'theme.dart';
 import 'main_screen.dart';
 
@@ -15,6 +16,81 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
   bool _photos = false;
   bool _notifications = false;
   bool _location = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCurrentPermissions();
+  }
+
+  Future<void> _checkCurrentPermissions() async {
+    final locationStatus = await Permission.location.isGranted;
+    final photosStatus = await Permission.photos.isGranted;
+    final contactsStatus = await Permission.contacts.isGranted;
+    final notificationsStatus = await Permission.notification.isGranted;
+
+    if (mounted) {
+      setState(() {
+        _location = locationStatus;
+        _photos = photosStatus;
+        _contacts = contactsStatus;
+        _notifications = notificationsStatus;
+      });
+    }
+  }
+
+  Future<void> _requestLocation(bool enable) async {
+    if (enable) {
+      final status = await Permission.location.request();
+      setState(() {
+        _location = status.isGranted;
+      });
+    } else {
+      setState(() {
+        _location = false;
+      });
+    }
+  }
+
+  Future<void> _requestPhotos(bool enable) async {
+    if (enable) {
+      final status = await Permission.photos.request();
+      await Permission.camera.request();
+      setState(() {
+        _photos = status.isGranted;
+      });
+    } else {
+      setState(() {
+        _photos = false;
+      });
+    }
+  }
+
+  Future<void> _requestContacts(bool enable) async {
+    if (enable) {
+      final status = await Permission.contacts.request();
+      setState(() {
+        _contacts = status.isGranted;
+      });
+    } else {
+      setState(() {
+        _contacts = false;
+      });
+    }
+  }
+
+  Future<void> _requestNotifications(bool enable) async {
+    if (enable) {
+      final status = await Permission.notification.request();
+      setState(() {
+        _notifications = status.isGranted;
+      });
+    } else {
+      setState(() {
+        _notifications = false;
+      });
+    }
+  }
 
   void _continue() {
     Navigator.of(context).pushAndRemoveUntil(
@@ -114,28 +190,28 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
                         'To find nearby deals and challenges',
                         Icons.location_on,
                         _location,
-                        (val) => setState(() => _location = val!),
+                        (val) => _requestLocation(val!),
                       ),
                       _buildPermissionTile(
                         'Photos & Videos',
                         'To upload your challenge proofs',
                         Icons.photo_library,
                         _photos,
-                        (val) => setState(() => _photos = val!),
+                        (val) => _requestPhotos(val!),
                       ),
                       _buildPermissionTile(
                         'Contacts',
                         'To share deals and invite friends',
                         Icons.contacts,
                         _contacts,
-                        (val) => setState(() => _contacts = val!),
+                        (val) => _requestContacts(val!),
                       ),
                       _buildPermissionTile(
                         'Notifications',
                         'To stay updated on new flash deals',
                         Icons.notifications,
                         _notifications,
-                        (val) => setState(() => _notifications = val!),
+                        (val) => _requestNotifications(val!),
                       ),
                     ],
                   ),

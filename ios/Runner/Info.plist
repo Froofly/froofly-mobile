@@ -51,6 +51,8 @@
 	<string>This app requires access to your location to discover local offers and deals within 10 km.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app requires access to your location to periodically update and show local offers and deals even when in the background.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This app requires access to your contacts to let you invite friends and share exclusive deals.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
