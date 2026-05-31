@@ -117,39 +117,7 @@ class _DealCardState extends State<DealCard> {
                     ),
                   ),
 
-                  // TOP LEFT: Offer Type / Badge Text
-                  if (widget.badgeText.isNotEmpty)
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.classicNavy,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: AppTheme.champaignGold.withValues(alpha: 0.5),
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            )
-                          ],
-                        ),
-                        child: Text(
-                          widget.badgeText.toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            color: AppTheme.champaignGold,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
+                  // TOP LEFT: Offer Type badge removed as per request
 
                   // TOP RIGHT: Direction / Distance
                   Positioned(
@@ -276,7 +244,7 @@ class _DealCardState extends State<DealCard> {
                                   fontWeight: FontWeight.w500,
                                   fontSize: 13,
                                 ),
-                                maxLines: 1,
+                                maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -415,29 +383,7 @@ class _DealCardState extends State<DealCard> {
                       ),
                     ),
 
-                    const Spacer(flex: 2),
-
-                    // Row 4: Claim Statistics pill
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.insights_rounded,
-                          color: AppTheme.champaignGold,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          widget.claimed.toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            color: AppTheme.textGrey,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
+                    // Row 4 (Claim Statistics pill) removed as per request
                   ],
                 ),
               ),

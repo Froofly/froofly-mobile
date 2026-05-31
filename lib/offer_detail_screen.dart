@@ -70,10 +70,10 @@ class _OfferDetailScreenState extends State<OfferDetailScreen>
     // Banner: prefer offer images array, fallback to merchant shopLogo
     final List<dynamic> images = o['images'] ?? [];
     String banner = '';
-    if (images.isNotEmpty && images[0].toString().startsWith('http')) {
+    if (images.isNotEmpty && images[0].toString().isNotEmpty) {
       banner = images[0].toString();
     } else if (_merchant['shopLogo'] != null &&
-        _merchant['shopLogo'].toString().startsWith('http')) {
+        _merchant['shopLogo'].toString().isNotEmpty) {
       banner = _merchant['shopLogo'].toString();
     }
     _bannerUrl = banner;
@@ -401,11 +401,17 @@ class _OfferDetailScreenState extends State<OfferDetailScreen>
                 fit: StackFit.expand,
                 children: [
                   _bannerUrl.isNotEmpty
-                      ? Image.network(
-                          _bannerUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => _buildPlaceholderBanner(),
-                        )
+                      ? (_bannerUrl.startsWith('http')
+                          ? Image.network(
+                              _bannerUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => _buildPlaceholderBanner(),
+                            )
+                          : Image.asset(
+                              _bannerUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => _buildPlaceholderBanner(),
+                            ))
                       : _buildPlaceholderBanner(),
                   // Gradient overlay
                   Container(
