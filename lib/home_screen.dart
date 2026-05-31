@@ -710,6 +710,10 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                           final String? targetLink = isMock ? null : d['linkUrl'];
                           
                           final bool isUnlocked = isMock ? false : _claimedAdIds.contains(d['id']);
+                          
+                          final String distanceVal = isMock
+                              ? (d['distance'] ?? '0.8 mi')
+                              : (d['distance'] ?? 'Nearby');
 
                           return DealCard(
                             imagePath: imagePath,
@@ -722,6 +726,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                             badgeText: badgeText,
                             badgeColor: badgeColor,
                             discountColor: discountColor,
+                            distance: distanceVal,
                             onUnlockPressed: () => _unlockDeal(d),
                             isNetworkImage: !isMock && imagePath.startsWith('http'),
                             isExternalLink: isExternal,

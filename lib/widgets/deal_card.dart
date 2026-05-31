@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,6 +20,7 @@ class DealCard extends StatefulWidget {
   final bool isExternalLink;
   final String? linkUrl;
   final bool isUnlocked;
+  final String distance; // Dynamic location/direction parameter
 
   const DealCard({
     super.key,
@@ -32,6 +34,7 @@ class DealCard extends StatefulWidget {
     required this.badgeText,
     required this.badgeColor,
     required this.discountColor,
+    required this.distance,
     this.onUnlockPressed,
     this.isNetworkImage = false,
     this.isExternalLink = false,
@@ -47,80 +50,206 @@ class _DealCardState extends State<DealCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.ivoryWhite,
-        borderRadius: BorderRadius.circular(40),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            offset: const Offset(0, 10),
-            blurRadius: 25,
+            color: AppTheme.classicNavy.withValues(alpha: 0.12),
+            offset: const Offset(0, 12),
+            blurRadius: 30,
+          ),
+          BoxShadow(
+            color: AppTheme.classicNavy.withValues(alpha: 0.04),
+            offset: const Offset(0, 2),
+            blurRadius: 4,
           )
         ],
-        border: Border.all(color: AppTheme.classicNavy.withValues(alpha: 0.2), width: 1.5),
+        border: Border.all(
+          color: AppTheme.classicNavy.withValues(alpha: 0.08),
+          width: 1,
+        ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Top Image Area - Centered 1:1 Square aspect ratio campaign image
+            // ==================== TOP SIDE VIEW (62% HEIGHT) ====================
             Expanded(
-              flex: 65,
-              child: Container(
-                color: const Color(0xFFF5F6FA),
-                alignment: Alignment.center,
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: widget.isNetworkImage
-                        ? Image.network(
-                            widget.imagePath,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[300],
-                              child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+              flex: 62,
+              child: Stack(
+                children: [
+                  // Full-cover Image with premium styling
+                  Positioned.fill(
+                    child: Container(
+                      color: const Color(0xFFF2F4F7),
+                      child: widget.isNetworkImage
+                          ? Image.network(
+                              widget.imagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                            )
+                          : Image.asset(
+                              widget.imagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
                             ),
-                          )
-                        : Image.asset(
-                            widget.imagePath,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[300],
-                              child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+                    ),
+                  ),
+
+                  // Soft dark elegant overlay gradient for visual contrast
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.35),
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.45),
+                          ],
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // TOP LEFT: Offer Type / Badge Text
+                  if (widget.badgeText.isNotEmpty)
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.classicNavy,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppTheme.champaignGold.withValues(alpha: 0.5),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            )
+                          ],
+                        ),
+                        child: Text(
+                          widget.badgeText.toUpperCase(),
+                          style: GoogleFonts.poppins(
+                            color: AppTheme.champaignGold,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // TOP RIGHT: Direction / Distance
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              width: 1,
                             ),
                           ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.near_me_outlined,
+                                color: AppTheme.champaignGold,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                widget.distance,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            
-            // Divider Bar
-            Container(
-              height: 8,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.magenta.withValues(alpha: 0.7),
-                    AppTheme.magenta,
-                    AppTheme.magenta.withValues(alpha: 0.7),
-                  ],
-                ),
+
+                  // BOTTOM LEFT: Expire in Days
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.timer_outlined,
+                            color: Colors.white,
+                            size: 13,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.timeLeft.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            // Bottom Information Area
+            // Subtle gold highlight divider line
+            Container(
+              height: 2,
+              color: AppTheme.champaignGold.withValues(alpha: 0.4),
+            ),
+
+            // ==================== BOTTOM DETAILS VIEW (38% HEIGHT) ====================
             Expanded(
-              flex: 35,
+              flex: 38,
               child: Container(
-                color: AppTheme.ivoryWhite,
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Row 1 & 2: Title, Brand and Unlock Button
+                    // Row 1: Merchant & Subtitle details
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -128,182 +257,181 @@ class _DealCardState extends State<DealCard> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Ticket Icon + Offer Title
-                              Row(
-                                children: [
-                                  const Icon(Icons.confirmation_num_outlined, color: AppTheme.classicNavy, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      widget.discountText.toUpperCase(),
-                                      style: GoogleFonts.poppins(
-                                        color: AppTheme.classicNavy,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                        letterSpacing: 0.5,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                widget.brandName.toUpperCase(),
+                                style: GoogleFonts.poppins(
+                                  color: AppTheme.classicNavy,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
+                                  letterSpacing: 0.5,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 8),
-                              // Coffee Icon + Brand Name
-                              Row(
-                                children: [
-                                  const Icon(Icons.local_cafe_outlined, color: AppTheme.classicNavy, size: 24),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      widget.brandName.toUpperCase(),
-                                      style: GoogleFonts.poppins(
-                                        color: AppTheme.classicNavy,
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 22,
-                                        letterSpacing: 0.5,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(height: 3),
+                              Text(
+                                widget.subtitle,
+                                style: GoogleFonts.poppins(
+                                  color: AppTheme.textGrey,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        // UNLOCK / CLICK HERE Button
-                        InkWell(
-                          onTap: widget.isExternalLink
-                              ? () async {
-                                  final url = widget.linkUrl ?? '';
-                                  final uri = Uri.tryParse(url);
-                                  final messenger = ScaffoldMessenger.of(context);
-                                  if (uri != null && await canLaunchUrl(uri)) {
-                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                  } else {
-                                    if (!mounted) return;
-                                    messenger.showSnackBar(
-                                      const SnackBar(content: Text('Could not open target link')),
-                                    );
-                                  }
-                                }
-                              : (widget.isUnlocked ? null : widget.onUnlockPressed),
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: widget.isUnlocked ? const Color(0xFF2E9C68) : AppTheme.ivoryWhite,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: widget.isUnlocked ? const Color(0xFF2E9C68) : AppTheme.classicNavy,
-                                width: 1.5,
-                              ),
-                            ),
+                      ],
+                    ),
+
+                    const Spacer(flex: 2),
+
+                    // Row 2: Interactive Deal / Discount highlights (Ticket Banner Design)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.classicNavy.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppTheme.classicNavy.withValues(alpha: 0.08),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.confirmation_number,
+                            color: widget.isUnlocked ? const Color(0xFF2E9C68) : AppTheme.champaignGold,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  widget.isExternalLink
-                                      ? 'CLICK HERE'
-                                      : (widget.isUnlocked ? 'UNLOCKED' : 'UNLOCK'),
+                                  widget.discountText.toUpperCase(),
                                   style: GoogleFonts.poppins(
-                                    color: widget.isUnlocked ? Colors.white : AppTheme.classicNavy,
+                                    color: AppTheme.classicNavy,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
+                                    letterSpacing: 0.3,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (widget.isExternalLink) ...[
-                                      Text(
-                                        'to visit ',
-                                        style: GoogleFonts.poppins(
-                                          color: AppTheme.classicNavy,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const Icon(Icons.open_in_new, color: AppTheme.classicNavy, size: 14),
-                                    ] else if (widget.isUnlocked) ...[
-                                      Text(
-                                        'coupon active ',
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white70,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const Icon(Icons.check_circle_outline, color: Colors.white, size: 14),
-                                    ] else ...[
-                                      Text(
-                                        'with ',
-                                        style: GoogleFonts.poppins(
-                                          color: AppTheme.classicNavy,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const Icon(Icons.lock_outline, color: AppTheme.classicNavy, size: 14),
-                                    ],
-                                  ],
+                                Text(
+                                  widget.discountDesc,
+                                  style: GoogleFonts.poppins(
+                                    color: AppTheme.textDark.withValues(alpha: 0.8),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Row 3: Expiry and Distance
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time, color: AppTheme.classicNavy, size: 18),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Expires: ${widget.timeLeft}',
-                              style: GoogleFonts.poppins(
-                                color: AppTheme.classicNavy,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+
+                    const Spacer(flex: 3),
+
+                    // Row 3: Action Buttons (Redesigned dynamic action states)
+                    InkWell(
+                      onTap: widget.isExternalLink
+                          ? () async {
+                              final url = widget.linkUrl ?? '';
+                              final uri = Uri.tryParse(url);
+                              final messenger = ScaffoldMessenger.of(context);
+                              if (uri != null && await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              } else {
+                                messenger.showSnackBar(
+                                  const SnackBar(content: Text('Could not open target link')),
+                                );
+                              }
+                            }
+                          : (widget.isUnlocked ? null : widget.onUnlockPressed),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          color: widget.isExternalLink
+                              ? AppTheme.classicNavy
+                              : (widget.isUnlocked
+                                  ? const Color(0xFF2E9C68)
+                                  : AppTheme.champaignGold),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            if (!widget.isUnlocked)
+                              BoxShadow(
+                                color: (widget.isExternalLink
+                                        ? AppTheme.classicNavy
+                                        : AppTheme.champaignGold)
+                                    .withValues(alpha: 0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              )
                           ],
                         ),
-                        Row(
-                          children: [
-                            Text(
-                              '0.8 mi',
-                              style: GoogleFonts.poppins(
-                                color: AppTheme.classicNavy,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
+                        child: Container(
+                          height: 52,
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                widget.isExternalLink
+                                    ? Icons.open_in_new_rounded
+                                    : (widget.isUnlocked
+                                        ? Icons.check_circle_rounded
+                                        : Icons.lock_open_rounded),
+                                color: widget.isExternalLink || widget.isUnlocked
+                                    ? Colors.white
+                                    : AppTheme.classicNavy,
+                                size: 18,
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.location_on_outlined, color: AppTheme.classicNavy, size: 18),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(
+                                widget.isExternalLink
+                                    ? 'CLICK HERE'
+                                    : (widget.isUnlocked ? 'UNLOCKED' : 'UNLOCK DEAL'),
+                                style: GoogleFonts.poppins(
+                                  color: widget.isExternalLink || widget.isUnlocked
+                                      ? Colors.white
+                                      : AppTheme.classicNavy,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Row 4: Claimed Count
+
+                    const Spacer(flex: 2),
+
+                    // Row 4: Claim Statistics pill
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.star, color: AppTheme.magenta, size: 20),
-                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.insights_rounded,
+                          color: AppTheme.champaignGold,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
                         Text(
                           widget.claimed.toUpperCase(),
                           style: GoogleFonts.poppins(
-                            color: AppTheme.classicNavy,
-                            fontSize: 14,
+                            color: AppTheme.textGrey,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.5,
                           ),
@@ -315,6 +443,19 @@ class _DealCardState extends State<DealCard> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      color: const Color(0xFFE2E4E7),
+      child: const Center(
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          size: 48,
+          color: AppTheme.classicNavy,
         ),
       ),
     );
