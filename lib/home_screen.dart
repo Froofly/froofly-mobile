@@ -660,9 +660,12 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                               ? (d['brandName'] ?? 'Merchant')
                               : (d['merchant']?['businessName'] ?? d['title'] ?? 'Merchant');
 
-                          final String subtitle = isMock
-                              ? (d['subtitle'] ?? '')
-                              : (d['description'] ?? 'Exclusive Drop');
+                          final String rawSubtitle = isMock
+                               ? (d['subtitle'] ?? '')
+                               : (d['description'] ?? 'Exclusive Drop');
+                           final String subtitle = rawSubtitle.startsWith('Campaign Type:')
+                               ? 'Exclusive Deal available for Froofly members.'
+                               : rawSubtitle;
 
                           final String discountText = isMock
                               ? (d['discountText'] ?? '')

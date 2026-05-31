@@ -279,27 +279,41 @@ class _DealCardState extends State<DealCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  widget.discountText.toUpperCase(),
-                                  style: GoogleFonts.poppins(
-                                    color: AppTheme.classicNavy,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    letterSpacing: 0.3,
+                                if (widget.discountText.isNotEmpty && widget.discountText != 'EXCLUSIVE') ...[
+                                  Text(
+                                    widget.discountText.toUpperCase(),
+                                    style: GoogleFonts.poppins(
+                                      color: AppTheme.classicNavy,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      letterSpacing: 0.3,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  widget.discountDesc,
-                                  style: GoogleFonts.poppins(
-                                    color: AppTheme.textDark.withValues(alpha: 0.8),
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 11,
+                                  Text(
+                                    widget.discountDesc,
+                                    style: GoogleFonts.poppins(
+                                      color: AppTheme.textDark.withValues(alpha: 0.8),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 11,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                ] else ...[
+                                  Text(
+                                    widget.discountDesc.toUpperCase(),
+                                    style: GoogleFonts.poppins(
+                                      color: AppTheme.classicNavy,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      letterSpacing: 0.3,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ],
                             ),
                           ),
