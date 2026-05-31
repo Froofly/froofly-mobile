@@ -282,57 +282,10 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
         await prefs.setInt('currentBalance', updatedBalance);
 
         if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-              child: Container(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFE5F8ED),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.celebration, color: Color(0xFF2E9C68), size: 48),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Congratulations!',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: AppTheme.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'You have successfully unlocked "${offer['title']}"!\n\nThis coupon code is now active and stored under Profile -> Orders.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                         onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E9C68),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: Text(
-                          'Awesome!',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully unlocked and added to orders!', style: GoogleFonts.poppins(color: Colors.white)),
+              backgroundColor: const Color(0xFF2E9C68),
             ),
           );
         }

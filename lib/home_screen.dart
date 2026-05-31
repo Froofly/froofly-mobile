@@ -505,7 +505,12 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
           final String brand = deal['merchant']?['businessName'] ?? deal['title'] ?? 'Merchant';
           final String title = deal['title'] ?? 'Unlocked Deal';
 
-          _showCelebrationDialog(brand, title, couponCode);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully unlocked and added to orders!', style: GoogleFonts.poppins(color: Colors.white)),
+              backgroundColor: const Color(0xFF2E9C68),
+            ),
+          );
           
           // Re-fetch claims and offers to update claim state if needed
           await _fetchClaims();

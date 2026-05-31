@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'theme.dart';
 import 'category_details_screen.dart';
@@ -155,6 +156,45 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
     super.dispose();
   }
 
+  Future<void> _fetchDeviceLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('Location services are disabled.');
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('Location permissions are denied.');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('Location permissions are permanently denied.');
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+
+      if (mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+          _locationName = 'My Location (GPS)';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching device location: $e');
+    }
+  }
+
   Future<void> _loadUserAndData() async {
     final prefs = await SharedPreferences.getInstance();
     _userId = prefs.getString('userId');
@@ -162,6 +202,17 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
     
     if (coins > 0) {
       BalanceManager.instance.updateBalance(coins);
+    }
+
+    // Prioritize cached locations stored by the home screen tracker
+    final double? cachedLat = prefs.getDouble('latitude');
+    final double? cachedLng = prefs.getDouble('longitude');
+    if (cachedLat != null && cachedLng != null) {
+      _latitude = cachedLat;
+      _longitude = cachedLng;
+      _locationName = 'My Location (GPS)';
+    } else {
+      await _fetchDeviceLocation();
     }
 
     await _fetchClaims();
@@ -253,6 +304,49 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
+              // GPS option
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: _locationName == 'My Location (GPS)' ? primaryColor.withOpacity(0.05) : Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: _locationName == 'My Location (GPS)' ? primaryColor : Colors.transparent,
+                    width: 1.5,
+                  ),
+                ),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.my_location,
+                    color: _locationName == 'My Location (GPS)' ? primaryColor : AppTheme.textGrey,
+                  ),
+                  title: Text(
+                    'My Location (GPS)',
+                    style: GoogleFonts.poppins(
+                      fontWeight: _locationName == 'My Location (GPS)' ? FontWeight.bold : FontWeight.w500,
+                      color: _locationName == 'My Location (GPS)' ? primaryColor : AppTheme.textDark,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Use device real-time GPS coordinates',
+                    style: GoogleFonts.poppins(fontSize: 10, color: AppTheme.textGrey),
+                  ),
+                  trailing: _locationName == 'My Location (GPS)'
+                      ? Icon(Icons.check_circle, color: primaryColor)
+                      : null,
+                  onTap: () async {
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(child: CircularProgressIndicator()),
+                    );
+                    await _fetchDeviceLocation();
+                    Navigator.pop(context); // close progress indicator
+                    _fetchOffers();
+                  },
+                ),
+              ),
               ..._mockLocations.map((loc) {
                 final bool isSelected = _locationName == loc['name'];
                 return Container(
@@ -689,57 +783,10 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('currentBalance', updatedBalance);
 
-        showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-            child: Container(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE5F8ED),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.celebration, color: Color(0xFF2E9C68), size: 48),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Congratulations!',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'You have successfully unlocked "${offer['title']}"!\n\nThis coupon code is now active and stored under Profile -> Orders.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E9C68),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text(
-                        'Awesome!',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully unlocked and added to orders!', style: GoogleFonts.poppins(color: Colors.white)),
+            backgroundColor: const Color(0xFF2E9C68),
           ),
         );
 

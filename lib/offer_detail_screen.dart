@@ -161,7 +161,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen>
 
         if (mounted) {
           setState(() => _isClaimed = true);
-          _showCelebrationDialog();
+          _showSnack('Successfully unlocked and added to orders!');
         }
       } else {
         final err = json.decode(response.body);
