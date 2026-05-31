@@ -342,9 +342,11 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     Map<String, dynamic>? heroOffer;
     List<Map<String, dynamic>> listOffers = [];
 
-    final availableOffers = _fetchedOffers != null
-        ? _fetchedOffers!.where((offer) => !_claimedOfferIds.contains(offer['id'])).toList()
-        : [];
+    final List<Map<String, dynamic>> availableOffers = _fetchedOffers != null
+        ? List<Map<String, dynamic>>.from(
+            _fetchedOffers!.where((offer) => !_claimedOfferIds.contains(offer['id']))
+          )
+        : <Map<String, dynamic>>[];
 
     if (availableOffers.isNotEmpty) {
       if (_selectedSubcategory == 'All') {
