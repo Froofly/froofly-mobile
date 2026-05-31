@@ -62,7 +62,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         if (!mounted) return;
         
         // Discard all current routes and navigate back to Sign In
-        Navigator.of(context).pushAndRemoveUntil(
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const SignInScreen()),
           (Route<dynamic> route) => false,
         );
