@@ -386,7 +386,13 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
   List<Map<String, dynamic>> get _dealsToShow {
     if (_fetchedOffers != null && _fetchedOffers!.isNotEmpty) {
-      return _fetchedOffers!.cast<Map<String, dynamic>>();
+      final realDeals = _fetchedOffers!
+          .where((d) => !_claimedAdIds.contains(d['id']))
+          .cast<Map<String, dynamic>>()
+          .toList();
+      if (realDeals.isNotEmpty) {
+        return realDeals;
+      }
     }
     // If empty/loading/offline, map the local fallback deals
     return _filteredDeals.map((d) => {
@@ -642,11 +648,13 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                           
                           final String imagePath = isMock 
                               ? (d['imagePath'] ?? 'assets/images/wellness.png')
-                              : (d['merchant'] != null &&
-                                     d['merchant']['shopLogo'] != null &&
-                                     d['merchant']['shopLogo'].toString().startsWith('http')
-                                  ? d['merchant']['shopLogo'].toString()
-                                  : 'assets/images/wellness.png');
+                              : (d['images'] != null && (d['images'] as List).isNotEmpty
+                                  ? d['images'][0].toString()
+                                  : (d['merchant'] != null &&
+                                         d['merchant']['shopLogo'] != null &&
+                                         d['merchant']['shopLogo'].toString().startsWith('http')
+                                      ? d['merchant']['shopLogo'].toString()
+                                      : 'assets/images/wellness.png'));
                           
                           final String brandName = isMock 
                               ? (d['brandName'] ?? 'Merchant')
@@ -658,7 +666,11 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
                           final String discountText = isMock
                               ? (d['discountText'] ?? '')
-                              : (d['offerType'] == 'PERCENTAGE' ? '${d['maxDiscount']}% OFF' : 'EXCLUSIVE');
+                              : (d['offerType'] == 'PERCENTAGE'
+                                  ? '${d['discountValue']}% OFF'
+                                  : (d['offerType'] == 'FLAT_DISCOUNT'
+                                      ? '\$${d['discountValue']} OFF'
+                                      : 'EXCLUSIVE'));
 
                           final String discountDesc = isMock
                               ? (d['discountDesc'] ?? '')
@@ -711,7 +723,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
                             badgeColor: badgeColor,
                             discountColor: discountColor,
                             onUnlockPressed: () => _unlockDeal(d),
-                            isNetworkImage: !isMock,
+                            isNetworkImage: !isMock && imagePath.startsWith('http'),
                             isExternalLink: isExternal,
                             linkUrl: targetLink,
                             isUnlocked: isUnlocked,

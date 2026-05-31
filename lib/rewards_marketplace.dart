@@ -872,11 +872,15 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
               )
             : _fetchedOffers != null && _fetchedOffers!.isNotEmpty
               ? Column(
-                  children: _fetchedOffers!.map((offer) {
+                  children: _fetchedOffers!
+                      .where((offer) => !_claimedOfferIds.contains(offer['id']))
+                      .map((offer) {
                     final merchant = offer['merchant'] ?? {};
-                    final String shopLogo = merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
-                        ? merchant['shopLogo']
-                        : 'assets/images/wellness.png';
+                    final String offerImg = (offer['images'] != null && (offer['images'] as List).isNotEmpty)
+                        ? offer['images'][0]
+                        : (merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
+                            ? merchant['shopLogo']
+                            : 'assets/images/wellness.png');
                     
                     final String merchantName = merchant['businessName'] ?? offer['title'] ?? 'Merchant';
                     final String offerTitle = offer['title'] ?? 'Special Deal';
@@ -898,7 +902,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                       padding: const EdgeInsets.only(bottom: 16),
                       child: _buildDealCard(
                         offer: offer,
-                        imagePath: shopLogo,
+                        imagePath: offerImg,
                         title: merchantName,
                         subtitle: offerTitle,
                         badgeText: offer['offerType'] == 'PERCENTAGE' ? '${offer['maxDiscount']}% OFF' : 'EXCLUSIVE',
@@ -908,7 +912,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                         expiryText: expiryText,
                         coinsRequired: coins,
                         isUnlocked: isClaimed,
-                        isNetworkImage: shopLogo.startsWith('http'),
+                        isNetworkImage: offerImg.startsWith('http'),
                       ),
                     );
                   }).toList(),

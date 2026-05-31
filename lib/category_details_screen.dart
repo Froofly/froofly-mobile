@@ -338,16 +338,20 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   Widget build(BuildContext context) {
     final bgColor = const Color(0xFFF9F9F9);
 
-    // Split fetched offers into hero drop and available drops
+    // Split fetched offers into hero drop and available drops, filtering out claimed ones
     Map<String, dynamic>? heroOffer;
     List<Map<String, dynamic>> listOffers = [];
 
-    if (_fetchedOffers != null && _fetchedOffers!.isNotEmpty) {
+    final availableOffers = _fetchedOffers != null
+        ? _fetchedOffers!.where((offer) => !_claimedOfferIds.contains(offer['id'])).toList()
+        : [];
+
+    if (availableOffers.isNotEmpty) {
       if (_selectedSubcategory == 'All') {
-        heroOffer = _fetchedOffers!.first;
-        listOffers = _fetchedOffers!.skip(1).toList();
+        heroOffer = availableOffers.first;
+        listOffers = availableOffers.skip(1).toList();
       } else {
-        listOffers = _fetchedOffers!;
+        listOffers = availableOffers;
       }
     }
 
@@ -509,9 +513,11 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                           Column(
                             children: listOffers.map((offer) {
                               final merchant = offer['merchant'] ?? {};
-                              final String shopLogo = merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
-                                  ? merchant['shopLogo']
-                                  : 'assets/images/wellness.png';
+                              final String offerImg = (offer['images'] != null && (offer['images'] as List).isNotEmpty)
+                                  ? offer['images'][0]
+                                  : (merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
+                                      ? merchant['shopLogo']
+                                      : 'assets/images/wellness.png');
                               
                               final String merchantName = merchant['businessName'] ?? offer['title'] ?? 'Merchant';
                               final String offerTitle = offer['title'] ?? 'Special Deal';
@@ -533,7 +539,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                                 padding: const EdgeInsets.only(bottom: 16),
                                 child: _buildDealCard(
                                   offer: offer,
-                                  imagePath: shopLogo,
+                                  imagePath: offerImg,
                                   title: merchantName,
                                   subtitle: offerTitle,
                                   badgeText: offer['offerType'] == 'PERCENTAGE' ? '${offer['maxDiscount']}% OFF' : 'EXCLUSIVE',
@@ -543,7 +549,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                                   expiryText: expiryText,
                                   coinsRequired: coins,
                                   isUnlocked: isClaimed,
-                                  isNetworkImage: shopLogo.startsWith('http'),
+                                  isNetworkImage: offerImg.startsWith('http'),
                                 ),
                               );
                             }).toList(),
@@ -559,9 +565,11 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
 
   Widget _buildHeroCard(Map<String, dynamic> offer) {
     final merchant = offer['merchant'] ?? {};
-    final String shopLogo = merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
-        ? merchant['shopLogo']
-        : 'assets/images/wellness.png';
+    final String offerImg = (offer['images'] != null && (offer['images'] as List).isNotEmpty)
+        ? offer['images'][0]
+        : (merchant['shopLogo']?.isNotEmpty == true && merchant['shopLogo'].toString().startsWith('http')
+            ? merchant['shopLogo']
+            : 'assets/images/wellness.png');
     final String merchantName = merchant['businessName'] ?? offer['title'] ?? 'Merchant';
     final String description = offer['description'] ?? 'Tap to view exclusive coupon code.';
 
@@ -585,15 +593,15 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           borderRadius: BorderRadius.circular(32),
           child: Stack(
             children: [
-              shopLogo.startsWith('http')
+              offerImg.startsWith('http')
                   ? Image.network(
-                      shopLogo,
+                      offerImg,
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
                     )
                   : Image.asset(
-                      shopLogo,
+                      offerImg,
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,

@@ -65,92 +65,35 @@ class _DealCardState extends State<DealCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Top Image Area
+            // Top Image Area - Centered 1:1 Square aspect ratio campaign image
             Expanded(
               flex: 65,
-              child: Stack(
-                fit: StackFit.expand,
-                clipBehavior: Clip.none,
-                children: [
-                  widget.isNetworkImage
-                      ? Image.network(
-                          widget.imagePath,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[300],
-                            child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
-                          ),
-                        )
-                      : Image.asset(
-                          widget.imagePath,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[300],
-                            child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
-                          ),
-                        ),
-                  // "Ad" Badge
-                  Positioned(
-                    top: 20,
-                    right: 20,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        'Ad',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // VERIFIED Badge
-                  Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF88A08A), Color(0xFF536A55)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            offset: const Offset(0, 4),
-                            blurRadius: 8,
+              child: Container(
+                color: const Color(0xFFF5F6FA),
+                alignment: Alignment.center,
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: widget.isNetworkImage
+                        ? Image.network(
+                            widget.imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: Colors.grey[300],
+                              child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+                            ),
                           )
-                        ],
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 1),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.check, color: Colors.white, size: 18),
-                          const SizedBox(width: 6),
-                          Text(
-                            'VERIFIED',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              letterSpacing: 1.2,
+                        : Image.asset(
+                            widget.imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: Colors.grey[300],
+                              child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
                   ),
-                ],
+                ),
               ),
             ),
             
