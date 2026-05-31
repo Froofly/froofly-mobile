@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:ui';
 import 'dart:math';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,6 +28,121 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final ImagePicker _picker = ImagePicker();
+  bool _isOffline = false;
+  bool _isChecking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    if (!mounted) return;
+    setState(() {
+      _isChecking = true;
+    });
+
+    try {
+      final result = await InternetAddress.lookup('google.com').timeout(const Duration(seconds: 3));
+      final isOnline = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      if (mounted) {
+        setState(() {
+          _isOffline = !isOnline;
+          _isChecking = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isOffline = true;
+          _isChecking = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildOfflineScreen() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF0F0),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.wifi_off_rounded,
+                  color: Color(0xFFD32F2F),
+                  size: 64,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'No Connection',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF2D3436),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Froofly operates strictly in online-only mode.\nPlease verify your Wi-Fi or cellular network to continue.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade600,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isChecking ? null : _checkConnectivity,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A3D62),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(0xFF0A3D62).withOpacity(0.5),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isChecking
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          'Try Again',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _onUploadPressed() async {
     showModalBottomSheet(
@@ -278,6 +394,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isOffline) {
+      return _buildOfflineScreen();
+    }
     // A clean "WillPopScope" fallback for Android back button to manage nested navs
     return WillPopScope(
       onWillPop: () async {
