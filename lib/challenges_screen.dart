@@ -355,24 +355,29 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: isCompleted ? null : widget.onScanPressed,
+              onPressed: widget.onScanPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: primaryColor,
-                disabledBackgroundColor: Colors.white.withOpacity(0.3),
-                disabledForegroundColor: Colors.white,
+                backgroundColor: isCompleted ? Colors.white.withOpacity(0.2) : Colors.white,
+                foregroundColor: isCompleted ? Colors.white : primaryColor,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
-              child: Text(
-                isCompleted ? '✓ Completed' : 'Scan New Bill',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  letterSpacing: 0.5,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(isCompleted ? Icons.check_circle_outline : Icons.qr_code_scanner, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    isCompleted ? 'Completed — Scan More' : 'Scan New Bill',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -809,6 +814,37 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
               height: 1.4,
             ),
           ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: widget.onScanPressed,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.qr_code_scanner, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Scan New Bill',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -821,19 +857,53 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Center(
         child: Column(
           children: [
-            const Icon(Icons.tour, color: _primaryColor, size: 30),
-            const SizedBox(height: 8),
+            const Icon(Icons.tour, color: _primaryColor, size: 36),
+            const SizedBox(height: 12),
             Text(
               'No active milestones currently.\nKeep scanning your bills to earn coins!',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 color: AppTheme.textGrey,
-                fontSize: 12,
-                height: 1.4,
+                fontSize: 13,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: widget.onScanPressed,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.qr_code_scanner, size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Scan Bill',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

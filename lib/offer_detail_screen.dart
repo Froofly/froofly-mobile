@@ -696,22 +696,86 @@ class _OfferDetailScreenState extends State<OfferDetailScreen>
   }
 
   Widget _buildUnlockedButton() {
-    return Container(
-      height: 58,
-      decoration: BoxDecoration(
-        color: const Color(0xFF2E9C68),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      alignment: Alignment.center,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
-          const SizedBox(width: 10),
-          Text('Offer Unlocked — Check Orders',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
-        ],
-      ),
+    final claimId = widget.offer['id']?.toString() ?? '';
+    final couponCode = 'FRFL-${claimId.length >= 8 ? claimId.substring(claimId.length - 8).toUpperCase() : claimId.toUpperCase()}';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: couponCode));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Coupon code copied: $couponCode', style: GoogleFonts.poppins()),
+                backgroundColor: const Color(0xFF2E9C68),
+              ),
+            );
+          },
+          child: Container(
+            height: 58,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2E9C68), Color(0xFF1E7C48)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2E9C68).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('COUPON ACTIVE',
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.white70)),
+                        Text(couponCode,
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white, letterSpacing: 0.5)),
+                      ],
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'COPY',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.white),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.copy, color: Colors.white, size: 12),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Show this code at the store or find it under Profile → Orders',
+          style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.textGrey),
+        ),
+      ],
     );
   }
 

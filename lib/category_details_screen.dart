@@ -406,10 +406,44 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: primaryColor),
-            onPressed: () {},
+          ValueListenableBuilder<int>(
+            valueListenable: BalanceManager.instance.balance,
+            builder: (context, balance, child) {
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F3F6),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: const Icon(Icons.stars, color: Colors.amber, size: 14),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      balance.toString().replaceAllMapped(
+                        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                        (Match m) => '${m[1]},',
+                      ),
+                      style: GoogleFonts.poppins(
+                        color: AppTheme.textDark,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: Column(
