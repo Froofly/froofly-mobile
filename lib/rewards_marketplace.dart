@@ -178,14 +178,17 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
         return;
       }
 
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
-      );
+      Position? position = await Geolocator.getLastKnownPosition();
+      if (position == null) {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 4),
+        );
+      }
 
       if (mounted) {
         setState(() {
-          _latitude = position.latitude;
+          _latitude = position!.latitude;
           _longitude = position.longitude;
           _locationName = 'My Location (GPS)';
         });
@@ -215,8 +218,10 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
       await _fetchDeviceLocation();
     }
 
-    await _fetchClaims();
-    await _fetchOffers();
+    await Future.wait([
+      _fetchClaims(),
+      _fetchOffers(),
+    ]);
   }
 
   Future<void> _fetchClaims() async {

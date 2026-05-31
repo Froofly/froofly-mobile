@@ -68,34 +68,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (userId != null && userId.isNotEmpty) {
       try {
-        // 1. Fetch Stats
-        final statsResponse = await http.get(Uri.parse('https://backend-froofly.onrender.com/auth/stats/$userId'));
-        if (statsResponse.statusCode == 200) {
+        final responses = await Future.wait([
+          http.get(Uri.parse('https://backend-froofly.onrender.com/auth/stats/$userId')),
+          (() async {
+            bool localFileExists = false;
+            if (avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
+              localFileExists = await File(avatarUrl).exists();
+            }
+
+            if (avatarUrl.isEmpty || !localFileExists) {
+              return http.get(Uri.parse('https://backend-froofly.onrender.com/avatar/$userId'));
+            }
+            return null;
+          })(),
+        ]);
+
+        final http.Response? statsResponse = responses[0];
+        final http.Response? avatarResponse = responses[1];
+
+        if (statsResponse != null && statsResponse.statusCode == 200) {
           final data = jsonDecode(statsResponse.body);
           fetchedTotalBills = data['totalBills'] ?? 0;
           fetchedAchievements = data['achievements'] ?? 0;
           fetchedTotalClaims = data['totalClaims'] ?? 0;
         }
 
-        // 2. Sync Avatar from Upstash Redis if local is missing
-        bool localFileExists = false;
-        if (avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
-          localFileExists = await File(avatarUrl).exists();
-        }
-
-        if (avatarUrl.isEmpty || !localFileExists) {
-          final avatarResponse = await http.get(Uri.parse('https://backend-froofly.onrender.com/avatar/$userId'));
-          if (avatarResponse.statusCode == 200) {
-            final data = jsonDecode(avatarResponse.body);
-            final base64String = data['base64'] as String?;
-            if (base64String != null) {
-              final bytes = base64Decode(base64String);
-              final dir = await getApplicationDocumentsDirectory();
-              final file = File('${dir.path}/avatar_$userId.png');
-              await file.writeAsBytes(bytes);
-              avatarUrl = file.path;
-              await prefs.setString('avatarUrl', avatarUrl);
-            }
+        if (avatarResponse != null && avatarResponse.statusCode == 200) {
+          final data = jsonDecode(avatarResponse.body);
+          final base64String = data['base64'] as String?;
+          if (base64String != null) {
+            final bytes = base64Decode(base64String);
+            final dir = await getApplicationDocumentsDirectory();
+            final file = File('${dir.path}/avatar_$userId.png');
+            await file.writeAsBytes(bytes);
+            avatarUrl = file.path;
+            await prefs.setString('avatarUrl', avatarUrl);
           }
         }
       } catch (e) {

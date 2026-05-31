@@ -88,10 +88,13 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
         return;
       } 
 
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
-      );
+      Position? position = await Geolocator.getLastKnownPosition();
+      if (position == null) {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 4),
+        );
+      }
       _latitude = position.latitude;
       _longitude = position.longitude;
       
@@ -105,8 +108,10 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       _longitude = prefs.getDouble('longitude') ?? 77.5946;
     }
 
-    await _fetchClaims();
-    await _fetchCategoryOffers();
+    await Future.wait([
+      _fetchClaims(),
+      _fetchCategoryOffers(),
+    ]);
 
     _locationTimer?.cancel();
     _locationTimer = Timer.periodic(const Duration(minutes: 10), (timer) async {
@@ -116,13 +121,16 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
 
   Future<void> _updateCurrentLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
-      );
+      Position? position = await Geolocator.getLastKnownPosition();
+      if (position == null) {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 4),
+        );
+      }
       if (mounted) {
         setState(() {
-          _latitude = position.latitude;
+          _latitude = position!.latitude;
           _longitude = position.longitude;
         });
         final prefs = await SharedPreferences.getInstance();
@@ -140,8 +148,10 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final prefs = await SharedPreferences.getInstance();
     _latitude = prefs.getDouble('latitude') ?? 12.9716;
     _longitude = prefs.getDouble('longitude') ?? 77.5946;
-    await _fetchClaims();
-    await _fetchCategoryOffers();
+    await Future.wait([
+      _fetchClaims(),
+      _fetchCategoryOffers(),
+    ]);
   }
 
   Future<void> _fetchClaims() async {

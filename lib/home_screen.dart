@@ -118,14 +118,17 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
   Future<void> _fetchAndUpdateLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 15),
-      );
+      Position? position = await Geolocator.getLastKnownPosition();
+      if (position == null) {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 4),
+        );
+      }
 
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _latitude = position.latitude;
+        _latitude = position!.latitude;
         _longitude = position.longitude;
       });
 
@@ -151,8 +154,10 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
       _latitude = prefs.getDouble('latitude') ?? 12.9716;
       _longitude = prefs.getDouble('longitude') ?? 77.5946;
       
-      await _fetchClaims();
-      await _fetchOffers();
+      await Future.wait([
+        _fetchClaims(),
+        _fetchOffers(),
+      ]);
     } catch (e) {
       debugPrint('Error loading user context: $e');
     } finally {
