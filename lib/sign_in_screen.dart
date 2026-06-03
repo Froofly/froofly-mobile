@@ -22,7 +22,7 @@ class _SignInScreenState extends State<SignInScreen> {
     if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
       try {
         final response = await http.post(
-          Uri.parse('https://backend-froofly.onrender.com/auth/login'),
+          Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/auth/login'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'email': _emailController.text.trim(),

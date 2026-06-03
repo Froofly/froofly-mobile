@@ -30,7 +30,7 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://backend-froofly.onrender.com/suggestion'),
+        Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/suggestion'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'text': text}),
       );

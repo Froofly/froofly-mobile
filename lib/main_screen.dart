@@ -264,7 +264,7 @@ class _MainScreenState extends State<MainScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('https://backend-froofly.onrender.com/payment/upload-screenshot'),
+        Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/payment/upload-screenshot'),
       );
       
       request.fields['userId'] = userId;

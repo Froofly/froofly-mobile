@@ -170,7 +170,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
   Future<void> _fetchClaims() async {
     if (_userId == null) return;
     try {
-      final response = await http.get(Uri.parse('https://backend-froofly.onrender.com/offer/claims/$_userId'));
+      final response = await http.get(Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/offer/claims/$_userId'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final Set<String> claimedIds = {};
@@ -203,7 +203,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
         userParam = '&userId=$_userId';
       }
       
-      final url = 'https://backend-froofly.onrender.com/ad/explore?lat=$_latitude&lng=$_longitude$categoryParam$userParam';
+      final url = 'https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/ad/explore?lat=$_latitude&lng=$_longitude$categoryParam$userParam';
       final response = await http.get(Uri.parse(url));
       
       if (response.statusCode == 200) {
@@ -496,7 +496,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
 
       try {
         final response = await http.post(
-          Uri.parse('https://backend-froofly.onrender.com/ad/claim/${deal['id']}'),
+          Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/ad/claim/${deal['id']}'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'userId': _userId}),
         );

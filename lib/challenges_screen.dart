@@ -22,7 +22,7 @@ class ChallengesScreen extends StatefulWidget {
 class _ChallengesScreenState extends State<ChallengesScreen> {
   bool _isLoading = true;
   List<dynamic> _challenges = [];
-  static const _baseUrl = 'https://backend-froofly.onrender.com';
+  static const _baseUrl = 'https://cuajqhm529.execute-api.ap-south-1.amazonaws.com';
   static const _primaryColor = Color(0xFF0A3D62);
   static const _bgColor = Color(0xFFF9F9F9);
 

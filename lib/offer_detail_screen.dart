@@ -143,7 +143,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen>
 
     try {
       final response = await http.post(
-        Uri.parse('https://backend-froofly.onrender.com/offer/claim/${widget.offer['id']}'),
+        Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/offer/claim/${widget.offer['id']}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': _userId}),
       );

@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (userId != null && userId.isNotEmpty) {
       try {
         final responses = await Future.wait([
-          http.get(Uri.parse('https://backend-froofly.onrender.com/auth/stats/$userId')),
+          http.get(Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/auth/stats/$userId')),
           (() async {
             bool localFileExists = false;
             if (avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
@@ -77,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
 
             if (avatarUrl.isEmpty || !localFileExists) {
-              return http.get(Uri.parse('https://backend-froofly.onrender.com/avatar/$userId'));
+              return http.get(Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/avatar/$userId'));
             }
             return null;
           })(),

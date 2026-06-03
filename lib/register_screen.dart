@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://backend-froofly.onrender.com/auth/register'),
+        Uri.parse('https://cuajqhm529.execute-api.ap-south-1.amazonaws.com/auth/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text.trim(),
