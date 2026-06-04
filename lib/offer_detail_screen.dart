@@ -158,6 +158,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen>
         await BalanceManager.instance.updateBalance(updatedBalance);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('currentBalance', updatedBalance);
+        BalanceManager.instance.triggerRefresh();
 
         if (mounted) {
           setState(() => _isClaimed = true);

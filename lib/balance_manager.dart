@@ -6,9 +6,14 @@ class BalanceManager {
   static BalanceManager get instance => _instance;
 
   final ValueNotifier<int> balance = ValueNotifier<int>(0);
+  final ValueNotifier<int> refreshTrigger = ValueNotifier<int>(0);
 
   BalanceManager._internal() {
     _loadBalance();
+  }
+
+  void triggerRefresh() {
+    refreshTrigger.value++;
   }
 
   Future<void> _loadBalance() async {

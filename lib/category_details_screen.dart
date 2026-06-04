@@ -36,12 +36,21 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   void initState() {
     super.initState();
     _loadUserDataAndFetch();
+    BalanceManager.instance.refreshTrigger.addListener(_onRefreshTriggered);
   }
 
   @override
   void dispose() {
+    BalanceManager.instance.refreshTrigger.removeListener(_onRefreshTriggered);
     _locationTimer?.cancel();
     super.dispose();
+  }
+
+  void _onRefreshTriggered() {
+    if (mounted) {
+      _fetchClaims();
+      _fetchCategoryOffers();
+    }
   }
 
   Future<void> _loadUserDataAndFetch() async {
@@ -302,6 +311,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
 
         await _fetchClaims();
         _fetchCategoryOffers();
+        BalanceManager.instance.triggerRefresh();
       } else {
         final err = json.decode(response.body);
         throw err['message'] ?? 'Claim failed';

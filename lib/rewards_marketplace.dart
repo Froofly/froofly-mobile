@@ -148,12 +148,21 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
     _refreshTimer = Timer.periodic(const Duration(minutes: 15), (timer) {
       _fetchOffers();
     });
+    BalanceManager.instance.refreshTrigger.addListener(_onRefreshTriggered);
   }
 
   @override
   void dispose() {
+    BalanceManager.instance.refreshTrigger.removeListener(_onRefreshTriggered);
     _refreshTimer?.cancel();
     super.dispose();
+  }
+
+  void _onRefreshTriggered() {
+    if (mounted) {
+      _fetchClaims();
+      _fetchOffers();
+    }
   }
 
   Future<void> _fetchDeviceLocation() async {
@@ -797,6 +806,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
 
         await _fetchClaims();
         _fetchOffers();
+        BalanceManager.instance.triggerRefresh();
       } else {
         final err = json.decode(response.body);
         throw err['message'] ?? 'Claim failed';
@@ -870,7 +880,7 @@ class _RewardsMarketplaceState extends State<RewardsMarketplace> {
                   child: CircularProgressIndicator(),
                 ),
               )
-            : _fetchedOffers != null && _fetchedOffers!.isNotEmpty
+            : _fetchedOffers != null && _fetchedOffers!.where((offer) => !_claimedOfferIds.contains(offer['id'])).isNotEmpty
               ? Column(
                   children: _fetchedOffers!
                       .where((offer) => !_claimedOfferIds.contains(offer['id']))

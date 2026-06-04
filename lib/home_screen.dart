@@ -73,12 +73,21 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
     super.initState();
     _loadUserContextAndFetch();
     _initLocationTracking();
+    BalanceManager.instance.refreshTrigger.addListener(_onRefreshTriggered);
   }
 
   @override
   void dispose() {
+    BalanceManager.instance.refreshTrigger.removeListener(_onRefreshTriggered);
     _locationTimer?.cancel();
     super.dispose();
+  }
+
+  void _onRefreshTriggered() {
+    if (mounted) {
+      _fetchClaims();
+      _fetchOffers();
+    }
   }
 
   Future<void> _initLocationTracking() async {
@@ -526,6 +535,7 @@ class _HomeDealsTabState extends State<HomeDealsTab> {
           // Re-fetch claims and offers to update claim state if needed
           await _fetchClaims();
           _fetchOffers();
+          BalanceManager.instance.triggerRefresh();
         } else {
           final err = json.decode(response.body);
           throw err['message'] ?? 'Claim failed';
