@@ -1,0 +1,8 @@
+# key.properties template for signing production builds
+# Rename this file to key.properties and fill in your actual credentials.
+# This file is ignored by git, do not commit the final key.properties file.
+
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+storeFile=path/to/your/upload-keystore.jks

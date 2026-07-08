@@ -17,6 +17,7 @@ import 'theme.dart';
 import 'coins_reward_screen.dart';
 import 'transaction_failed_screen.dart';
 import 'balance_manager.dart';
+import 'services/location_refresh_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -35,6 +36,13 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _checkConnectivity();
+    LocationRefreshService().startForegroundRefresh();
+  }
+
+  @override
+  void dispose() {
+    LocationRefreshService().stopRefresh();
+    super.dispose();
   }
 
   Future<void> _checkConnectivity() async {
